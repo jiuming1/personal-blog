@@ -106,7 +106,7 @@ MATLAB 提供了强大的数值计算能力，通过掌握这些基础功能，�
     tags: ['MATLAB', '数值计算', '矩阵运算', '信号处理'],
     readTime: 12,
     likes: 156,
-    coverImage: '/images/projects/matlab.webp',
+    coverImage: '/personal-blog/images/projects/matlab.webp',
     featured: true,
   },
   {
@@ -210,7 +210,7 @@ ANSYS Fluent 提供了强大的流体仿真能力，通过系统学习和实践�
     tags: ['ANSYS Fluent', 'CFD', '流体仿真', '网格生成'],
     readTime: 15,
     likes: 134,
-    coverImage: '/images/projects/ansys.png',
+    coverImage: '/personal-blog/images/projects/ansys.png',
     featured: true,
   },
   {
@@ -337,7 +337,7 @@ sudo yum install -y adobe-source-han-sans-cn-fonts
     tags: ['Python', 'Chrome', '字体', 'CentOS', '中文'],
     readTime: 8,
     likes: 89,
-    coverImage: '/images/projects/python.png',
+    coverImage: '/personal-blog/images/projects/python.png',
     featured: false,
   },
   {
@@ -445,7 +445,7 @@ COMSOL Multiphysics 提供了强大的多物理场仿真能力，通过合理设
     tags: ['COMSOL', '多物理场', '电磁仿真', '流固耦合'],
     readTime: 14,
     likes: 89,
-    coverImage: '/images/projects/comsol.png',
+    coverImage: '/personal-blog/images/projects/comsol.png',
     featured: false,
   },
   {
@@ -599,7 +599,7 @@ Python 为科学计算提供了强大的工具，通过合理使用各种库和�
     tags: ['Python', 'NumPy', 'SciPy', '科学计算'],
     readTime: 16,
     likes: 67,
-    coverImage: '/images/projects/python.png',
+    coverImage: '/personal-blog/images/projects/python.png',
     featured: false,
   },
   {
@@ -787,7 +787,7 @@ OpenFOAM官网文档、CentOS官方包管理指南。
     tags: ['OpenFOAM', 'CFD', '源码编译', 'CentOS', '流体仿真'],
     readTime: 20,
     likes: 78,
-    coverImage: '/images/projects/python.png',
+    coverImage: '/personal-blog/images/projects/python.png',
     featured: false,
   },
   {
@@ -873,7 +873,7 @@ OpenFOAM官网文档、CentOS官方包管理指南。
     tags: ['水锤效应', '瞬态分析', '压力波', '流体力学', '数值计算'],
     readTime: 18,
     likes: 92,
-    coverImage: '/images/projects/matlab.webp',
+    coverImage: '/personal-blog/images/projects/matlab.webp',
     featured: false,
   },
 ];
