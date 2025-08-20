@@ -1,0 +1,296 @@
+幻灯片 1:
+
+
+
+
+
+OpenFOAM v2306 源码编译安装教程
+基于CentOS系统的详细指南
+
+本教程聚焦CentOS 9 Stream系统的源码编译安装流程，涵盖准备、编译、测试全流程及问题解决
+
+幻灯片 2:
+
+
+
+
+⽬录
+简介与背景
+01
+系统准备（CentOS 9 Stream）
+02
+依赖库安装
+03
+源码下载与解压
+04
+环境变量配置
+05
+编译过程（ThirdParty+OpenFOAM）
+06
+安装测试与验证
+07
+常⻅问题解决
+08
+总结与注意事项
+09
+
+幻灯片 3:
+
+
+
+
+01
+简介与背景
+>
+OpenFOAM概述：开源CFD⼯具包，⽀持复杂流体模拟，⼴泛应⽤于
+科研与⼯程。
+>
+版本说明：v2306为稳定版本，需源码编译获取最新特性。
+>
+系统选择：推荐CentOS 9 Stream，CentOS 7已过时且依赖差异⼤。
+>
+
+安装优势：源码编译可⾃定义配置，适配特定硬件环境。
+
+幻灯片 4:
+
+
+
+
+
+02
+系统准备
+>
+权限配置：添加⽤⼾sudo权限，需注销重登⽣效。
+>
+系统更新：确保软件包最新。
+>
+开发⼯具组：安装gcc、g++等编译⼯具。
+>
+
+
+注意：CentOS 7需使⽤yum，部分依赖包名不同。
+usermod -aG wheel 
+⽤⼾名
+sudo dnf update -y
+sudo dnf groupinstall "Development Tools" -y
+
+幻灯片 5:
+
+
+
+
+03
+依赖库安装
+>
+核⼼依赖：openmpi-devel, cmake, flex, bison
+>
+数值库：openblas-serial-devel, zlib-devel
+>
+图形依赖：libXt-devel, boost-devel
+>
+
+
+问题解决：openblas-devel找不到时，安装epel-release仓库。
+sudo dnf install -y epel-release
+
+幻灯片 6:
+
+
+
+
+
+04
+源码下载与解压
+>
+⽬录创建：集中管理源码与安装⽂件，保持⼯作区整洁。
+>
+源码获取：使⽤wget命令从官⽅渠道下载核⼼包和第三⽅库。
+>
+解压操作：通过tar命令将下载的压缩包解压⾄指定的OpenFOAM
+⽬录。
+>
+
+
+清理可选：解压完成后，可删除压缩包以释放存储空间。
+mkdir -p ~/OpenFOAM
+cd ~/OpenFOAM
+# 
+下载源码包
+wget https://.../OpenFOAM-v2306.tgz
+wget https://.../ThirdParty-v2306.tgz
+# 
+解压⽂件
+tar -xzf OpenFOAM-v2306.tgz
+tar -xzf ThirdParty-v2306.tgz
+# 
+可选：删除压缩包
+rm *.tgz
+
+幻灯片 7:
+
+
+
+
+05
+环境变量配置
+>
+配置⽂件：编辑 ~/.bashrc ⽂件以持久化环境变量，确保重启后
+配置依然有效。
+>
+关键变量：设置 FOAM_INST_DIR 指向安装根⽬录，并通过
+WM_NCOMPPROCS 定义编译时使⽤的CPU核⼼数。
+>
+⽣效命令：使⽤ source 命令使修改后的配置⽴即⽣效，⽆需注
+销或重启。
+>
+验证：通过 echo 命令打印变量值，确认 WM_PROJECT_DIR 等关
+
+
+键路径指向正确。
+# 
+编辑⽤⼾环境变量配置⽂件
+nano ~/.bashrc
+# 
+在⽂件末尾添加以下内容
+:
+export FOAM_INST_DIR=$HOME/OpenFOAM
+export WM_NCOMPPROCS=$(nproc)
+source $FOAM_INST_DIR/OpenFOAM-v2306/etc/bashrc
+# 
+保存退出后，使配置⽴即⽣效
+source ~/.bashrc
+# 
+验证环境变量是否配置正确
+echo $WM_PROJECT_DIR
+
+幻灯片 8:
+
+
+
+
+06
+编译过程 (上): ThirdParty库
+>
+⽬录进⼊：切换到ThirdParty源码⽬录。
+>
+配置可选：编辑prefs.sh启⽤ParaView编译。
+>
+编译命令：执⾏Allwmake⾃动编译。
+>
+
+
+注意：编译耗时较⻓（30分钟-2⼩时）。
+cd ~/OpenFOAM/ThirdParty-v2306
+# 
+可选
+: 
+编辑
+ etc/prefs.sh
+# ./Allwmake -j 4  # 
+可选指定线程数
+./Allwmake
+
+幻灯片 9:
+
+
+
+
+06
+编译过程 (下): OpenFOAM主程序
+>
+⽬录进⼊：切换到OpenFOAM源码⽬录。
+>
+环境刷新：确保第三⽅库路径正确。
+>
+编译命令：多线程加速编译。
+>
+
+
+常⻅错误：mpi.h找不到时，检查openmpi-devel安装。
+cd ~/OpenFOAM/OpenFOAM-v2306
+# 
+刷新环境变量，确保第三⽅库路径正确
+source ~/.bashrc
+# 
+使⽤所有
+CPU
+核⼼加速编译
+./Allwmake -j $(nproc)
+
+幻灯片 10:
+
+
+
+
+07
+测试与验证
+>
+
+安装测试：执⾏ 
+foamInstallationTest  命令，检查基础安装和
+依赖是否正确配置。
+>
+案例运⾏：复制 tutorials ⽬录下的案例（如
+
+incompressible/simpleFoam/pitzDaily），执⾏ 
+
+blockMesh  和
+simpleFoam  进⾏求解。
+>
+
+可视化：运⾏ 
+paraFoam  启动后处理软件，加载案例结果，检查流
+场云图和⽮量图是否正常显⽰。
+>
+问题解决：若 paraFoam 命令未找到，可能是 ThirdParty 库编译时未
+包含 ParaView，需⼿动下载并安装 ParaView，并将其路径添加到环境变
+
+
+
+
+
+量。
+
+幻灯片 11:
+
+
+
+
+
+08
+常⻅问题解决
+>
+mpi.h找不到： 确认openmpi-devel开发包已安装。若已安装，检查.bashrc中MPI相关环
+境变量的设置顺序，确保在OpenFOAM配置前⽣效。
+>
+编译中断： 编译过程中若因错误中断，可尝试清理build和platforms⽬录后重新编译。
+使⽤命令 `./Allwmake -clean` 或⼿动删除这些⽬录。
+>
+ParaView缺失： 如果编译ThirdParty时未启⽤ParaView，或编译失败，可以从
+ParaView官⽹ ⼿动下载预编译安装包，并将其可执⾏⽂件路径添加到系统PATH环境变
+量中。
+>
+权限错误： 确保当前⽤⼾对OpenFOAM的源码⽬录和安装⽬录拥有完整的读写和执⾏权
+限。必要时使⽤ `chmod` 或 `chown` 命令调整权限。
+
+幻灯片 12:
+
+
+
+
+总结
+>
+核⼼步骤：依赖安装 
+→
+ 环境配置 
+→
+ 双阶段编译 
+→
+ 测试验证。
+>
+注意事项：编译需充⾜时间（2-4⼩时），环境变量正确性是关键。
+>
+参考资料：OpenFOAM官⽹⽂档、CentOS官⽅包管理指南。
+感谢观看
+欢迎提问与交流
