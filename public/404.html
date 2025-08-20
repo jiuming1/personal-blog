@@ -5,33 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>重定向中...</title>
     <script>
-        // 获取当前路径和参数
-        const path = window.location.pathname;
-        const search = window.location.search;
-        const hash = window.location.hash;
-        
-        // 处理路径重定向
-        let targetPath = '/personal-blog/';
-        
-        // 如果路径不是根路径，则保留路径信息
-        if (path !== '/' && path !== '/personal-blog/' && path !== '/personal-blog') {
-            // 移除 /personal-blog 前缀（如果存在）
-            const cleanPath = path.replace(/^\/personal-blog\/?/, '');
-            if (cleanPath) {
-                targetPath += cleanPath;
-            }
-        }
-        
-        // 添加查询参数和哈希
-        targetPath += search + hash;
-        
-        // 重定向到目标路径
-        window.location.href = targetPath;
+        // 简单直接的重定向到主页
+        // 让React Router处理所有路由
+        window.location.href = '/personal-blog/';
     </script>
 </head>
 <body>
     <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-        <h2>正在重定向...</h2>
+        <h2>正在重定向到主页...</h2>
         <p>如果页面没有自动跳转，请 <a href="/personal-blog/">点击这里</a> 返回主页</p>
     </div>
 </body>

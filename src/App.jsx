@@ -23,7 +23,7 @@ function App() {
   return (
     <ThemeProvider theme={currentTheme}>
       <CssBaseline />
-      <Router>
+      <Router basename="/personal-blog">
         <Layout isDark={isDark} onToggleTheme={toggleTheme}>
           <Routes>
             <Route path="/" element={<Home />} />
