@@ -486,7 +486,7 @@ const ArticleDetail = () => {
                     }}
                   >
                     <Avatar
-                      src="/images/projects/head.jpg"
+                      src="/personal-blog/images/projects/head.jpg"
                       sx={{
                         width: 48,
                         height: 48,

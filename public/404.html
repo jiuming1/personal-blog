@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重定向中...</title>
+    <script>
+        // 获取当前路径
+        const path = window.location.pathname;
+        const search = window.location.search;
+        const hash = window.location.hash;
+        
+        // 重定向到主页，让React Router处理路由
+        window.location.href = '/personal-blog/' + path.replace('/personal-blog', '') + search + hash;
+    </script>
+</head>
+<body>
+    <p>正在重定向...</p>
+</body>
+</html>

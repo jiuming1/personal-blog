@@ -408,7 +408,7 @@ const Sidebar = ({ isOpen = true, onClose }) => {
       }}
     >
       <Avatar
-        src="/images/projects/head.jpg"
+        src="/personal-blog/images/projects/head.jpg"
         sx={{
           width: 80,
           height: 80,

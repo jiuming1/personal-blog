@@ -84,7 +84,7 @@ const Home = () => {
           ? '0 8px 32px rgba(30, 58, 138, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
           : '0 8px 32px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
         // 添加背景图片
-        backgroundImage: `url('/images/projects/bg.jpg')`,
+        backgroundImage: `url('/personal-blog/images/projects/bg.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -123,7 +123,7 @@ const Home = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
             <motion.div variants={itemVariants}>
               <Avatar
-                src="/images/projects/head.jpg"
+                src="/personal-blog/images/projects/head.jpg"
                 sx={{
                   width: 120,
                   height: 120,

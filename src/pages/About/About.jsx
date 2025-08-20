@@ -152,7 +152,7 @@ const About = () => {
               <Grid item xs={12} md={4}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Avatar
-                    src="/images/projects/head.jpg"
+                    src="/personal-blog/images/projects/head.jpg"
                     sx={{
                       width: 200,
                       height: 200,
