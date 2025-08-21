@@ -1,4 +1,4 @@
-import React, { useState, useMemo, memo } from 'react';
+import React, { useState, useMemo, memo, useRef, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -43,8 +43,10 @@ const ArticlesList = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('date');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   
   const articlesPerPage = 9;
+  const searchInputRef = useRef(null);
 
   // 动画变体
   const containerVariants = {
@@ -121,6 +123,27 @@ const ArticlesList = () => {
     setSearchQuery(value);
   };
 
+  // 处理搜索框焦点
+  const handleSearchFocus = () => {
+    setIsSearchFocused(true);
+  };
+
+  const handleSearchBlur = () => {
+    setIsSearchFocused(false);
+  };
+
+  // 恢复搜索框焦点
+  useEffect(() => {
+    if (isSearchFocused && searchInputRef.current) {
+      // 使用setTimeout确保在DOM更新后恢复焦点
+      setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }, 0);
+    }
+  }, [filteredArticles, isSearchFocused]);
+
   // 处理分类筛选
   const handleCategoryChange = (event) => {
     const category = event.target.value;
@@ -150,13 +173,16 @@ const ArticlesList = () => {
   };
 
   // 使用memo包装搜索框组件，防止不必要的重新渲染
-  const SearchField = memo(({ value, onChange, placeholder }) => (
+  const SearchField = memo(({ value, onChange, onFocus, onBlur, placeholder, inputRef }) => (
     <TextField
       key="search-field" // 添加稳定的key
       fullWidth
       placeholder={placeholder}
       value={value}
       onChange={onChange}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      inputRef={inputRef}
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
@@ -188,7 +214,10 @@ const ArticlesList = () => {
           <SearchField
             value={searchQuery}
             onChange={handleSearch}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
             placeholder="搜索文章标题或内容..."
+            inputRef={searchInputRef}
           />
 
           {/* 筛选选项 */}
