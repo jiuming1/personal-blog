@@ -41,7 +41,6 @@ import { getAllArticles, getArticlesByCategory, searchArticles } from '../../dat
 const ArticleListSearchField = memo(({ value, onChange, placeholder }) => {
   const [inputValue, setInputValue] = useState(value || '');
   const [isFocused, setIsFocused] = useState(false);
-  const searchTimeoutRef = useRef(null);
   const lastValueRef = useRef(value);
 
   // 同步外部value变化 - 只在组件初始化或value真正改变时更新
@@ -52,33 +51,15 @@ const ArticleListSearchField = memo(({ value, onChange, placeholder }) => {
     }
   }, [value]);
 
-  // 防抖搜索函数
-  const debouncedSearch = (searchValue) => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-    searchTimeoutRef.current = setTimeout(() => {
-      if (onChange) {
-        onChange(searchValue);
-      }
-    }, 100); // 减少到100ms延迟，提高响应速度
-  };
-
   const handleInputChange = (event) => {
     const newValue = event.target.value;
     setInputValue(newValue);
-    // 直接调用onChange，不使用防抖，避免延迟导致的输入问题
-    if (onChange) {
-      onChange(newValue);
-    }
+    // 参考顶部导航栏的方式，只更新内部状态，不立即调用外部回调
   };
 
   const handleClear = () => {
     setInputValue('');
-    // 清除定时器
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
+    // 参考顶部导航栏的方式，清除时调用外部回调
     if (onChange) {
       onChange('');
     }
@@ -86,24 +67,12 @@ const ArticleListSearchField = memo(({ value, onChange, placeholder }) => {
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
-      // 按回车键时立即搜索，清除定时器
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
+      // 参考顶部导航栏的方式，按回车键时调用外部回调
       if (onChange) {
         onChange(inputValue);
       }
     }
   };
-
-  // 组件卸载时清理定时器
-  useEffect(() => {
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, []);
 
   return (
     <TextField
