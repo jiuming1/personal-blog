@@ -99,8 +99,12 @@ const Header = ({ isDark, onToggleTheme, onSidebarToggle }) => {
             component={Link}
             to={item.path}
             color="inherit"
+            startIcon={item.icon}
             sx={{
               position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
               '&::after': {
                 content: '""',
                 position: 'absolute',
