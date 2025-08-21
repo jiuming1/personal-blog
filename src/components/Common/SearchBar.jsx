@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   TextField,
   InputAdornment,
@@ -15,6 +15,7 @@ import {
 import { Search, Clear } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { debounce } from '../../utils/helpers';
+import { getAllArticles } from '../../data/articles';
 
 /**
  * 搜索栏组件
@@ -38,21 +39,31 @@ const SearchBar = ({
   const [isFocused, setIsFocused] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-  // 防抖搜索
-  const debouncedSearch = useCallback(
-    debounce((searchQuery) => {
-      if (onSearch) {
-        onSearch(searchQuery);
-      }
-    }, 300),
-    [onSearch]
-  );
+  // 获取所有文章用于生成建议
+  const allArticles = useMemo(() => getAllArticles(), []);
+
+  // 生成搜索建议
+  const generatedSuggestions = useMemo(() => {
+    if (!query.trim() || query.length < 2) return [];
+    
+    const lowercaseQuery = query.toLowerCase();
+    const matchingArticles = allArticles.filter(article => 
+      article.title.toLowerCase().includes(lowercaseQuery) ||
+      article.excerpt.toLowerCase().includes(lowercaseQuery) ||
+      (article.tags && article.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)))
+    );
+    
+    // 返回前5个匹配的文章标题作为建议
+    return matchingArticles.slice(0, 5).map(article => article.title);
+  }, [query, allArticles]);
+
+  // 使用传入的建议或生成的建议
+  const finalSuggestions = suggestions.length > 0 ? suggestions : generatedSuggestions;
 
   const handleInputChange = (event) => {
     const value = event.target.value;
     setQuery(value);
     setShowResults(value.length > 0);
-    debouncedSearch(value);
   };
 
   const handleClear = () => {
@@ -159,7 +170,7 @@ const SearchBar = ({
 
       {/* 搜索建议 */}
       <AnimatePresence>
-        {showSuggestions && showResults && suggestions.length > 0 && (
+        {showSuggestions && showResults && finalSuggestions.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -183,7 +194,7 @@ const SearchBar = ({
               }}
             >
               <List dense>
-                {suggestions.map((suggestion, index) => (
+                {finalSuggestions.map((suggestion, index) => (
                   <motion.div
                     key={index}
                     variants={suggestionVariants}
@@ -218,7 +229,7 @@ const SearchBar = ({
 
       {/* 无结果提示 - 只在有查询内容且没有建议时显示 */}
       <AnimatePresence>
-        {showSuggestions && showResults && query.trim().length > 0 && suggestions.length === 0 && (
+        {showSuggestions && showResults && query.trim().length > 0 && finalSuggestions.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}

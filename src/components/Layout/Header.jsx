@@ -239,7 +239,28 @@ const Header = ({ isDark, onToggleTheme, onSidebarToggle }) => {
                     >
                       <SearchBar
                         placeholder="搜索文章..."
-                        onSearch={handleSearch}
+                        onSuggestionClick={(query) => {
+                          console.log('搜索建议点击:', query);
+                          // 导航到文章列表页面并传递搜索参数
+                          if (query.trim()) {
+                            navigate(`${ROUTES.ARTICLES}?search=${encodeURIComponent(query)}`);
+                          } else {
+                            navigate(ROUTES.ARTICLES);
+                          }
+                          // 关闭搜索栏
+                          setSearchOpen(false);
+                        }}
+                        onSearch={(query) => {
+                          console.log('搜索回车:', query);
+                          // 导航到文章列表页面并传递搜索参数
+                          if (query.trim()) {
+                            navigate(`${ROUTES.ARTICLES}?search=${encodeURIComponent(query)}`);
+                          } else {
+                            navigate(ROUTES.ARTICLES);
+                          }
+                          // 关闭搜索栏
+                          setSearchOpen(false);
+                        }}
                       />
                     </motion.div>
                   )}
