@@ -41,23 +41,38 @@ import { getAllArticles, getArticlesByCategory, searchArticles } from '../../dat
 const ArticleListSearchField = memo(({ value, onChange, placeholder }) => {
   const [inputValue, setInputValue] = useState(value || '');
   const [isFocused, setIsFocused] = useState(false);
+  const searchTimeoutRef = useRef(null);
 
   // 同步外部value变化
   useEffect(() => {
     setInputValue(value || '');
   }, [value]);
 
+  // 防抖搜索函数
+  const debouncedSearch = (searchValue) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      if (onChange) {
+        onChange(searchValue);
+      }
+    }, 300); // 300ms延迟
+  };
+
   const handleInputChange = (event) => {
     const newValue = event.target.value;
     setInputValue(newValue);
-    // 实时调用onChange，但不触发页面刷新
-    if (onChange) {
-      onChange(newValue);
-    }
+    // 使用防抖机制调用onChange
+    debouncedSearch(newValue);
   };
 
   const handleClear = () => {
     setInputValue('');
+    // 清除定时器
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
     if (onChange) {
       onChange('');
     }
@@ -65,12 +80,24 @@ const ArticleListSearchField = memo(({ value, onChange, placeholder }) => {
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
-      // 按回车键时确保搜索
+      // 按回车键时立即搜索，清除定时器
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
       if (onChange) {
         onChange(inputValue);
       }
     }
   };
+
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <TextField
