@@ -92,9 +92,17 @@ const ArticlesList = () => {
         case 'date':
           return new Date(b.publishDate) - new Date(a.publishDate);
         case 'views':
-          return b.views - a.views;
+          // 确保views字段存在，如果不存在则使用0
+          const viewsA = a.views || 0;
+          const viewsB = b.views || 0;
+          return viewsB - viewsA;
         case 'title':
-          return a.title.localeCompare(b.title);
+          return a.title.localeCompare(b.title, 'zh-CN');
+        case 'likes':
+          // 添加按点赞数排序
+          const likesA = a.likes || 0;
+          const likesB = b.likes || 0;
+          return likesB - likesA;
         default:
           return 0;
       }
@@ -213,6 +221,7 @@ const ArticlesList = () => {
               >
                 <MenuItem value="date">按日期</MenuItem>
                 <MenuItem value="views">按浏览量</MenuItem>
+                <MenuItem value="likes">按点赞数</MenuItem>
                 <MenuItem value="title">按标题</MenuItem>
               </Select>
             </FormControl>

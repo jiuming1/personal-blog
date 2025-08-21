@@ -906,8 +906,13 @@ export const getArticleById = (id) => {
 /**
  * 根据分类获取文章
  */
-export const getArticlesByCategory = (category) => 
-  articles.filter(article => article.category === category);
+export const getArticlesByCategory = (category) => {
+  // 初始化浏览量数据
+  initializeArticleViews(articles);
+  // 返回包含真实浏览量的文章
+  const articlesWithViews = getArticlesWithViews(articles);
+  return articlesWithViews.filter(article => article.category === category);
+};
 
 /**
  * 获取推荐文章
@@ -937,8 +942,13 @@ export const getLatestArticles = (limit = 5) => {
  * 搜索文章
  */
 export const searchArticles = (query) => {
+  // 初始化浏览量数据
+  initializeArticleViews(articles);
+  // 返回包含真实浏览量的文章
+  const articlesWithViews = getArticlesWithViews(articles);
+  
   const lowercaseQuery = query.toLowerCase();
-  return articles.filter(article => 
+  return articlesWithViews.filter(article => 
     article.title.toLowerCase().includes(lowercaseQuery) ||
     article.excerpt.toLowerCase().includes(lowercaseQuery) ||
     (article.tags && article.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)))
