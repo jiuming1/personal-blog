@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import {
   Box,
   Container,
@@ -149,7 +149,23 @@ const ArticlesList = () => {
     setCurrentPage(1);
   };
 
-
+  // 使用memo包装搜索框组件，防止不必要的重新渲染
+  const SearchField = memo(({ value, onChange, placeholder }) => (
+    <TextField
+      key="search-field" // 添加稳定的key
+      fullWidth
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon />
+          </InputAdornment>
+        ),
+      }}
+    />
+  ));
 
   // 筛选器组件
   const FilterSection = () => (
@@ -169,18 +185,10 @@ const ArticlesList = () => {
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* 搜索框 */}
-          <TextField
-            fullWidth
-            placeholder="搜索文章标题或内容..."
+          <SearchField
             value={searchQuery}
             onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
+            placeholder="搜索文章标题或内容..."
           />
 
           {/* 筛选选项 */}
