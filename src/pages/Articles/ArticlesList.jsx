@@ -61,14 +61,16 @@ const ArticleListSearchField = memo(({ value, onChange, placeholder }) => {
       if (onChange) {
         onChange(searchValue);
       }
-    }, 300); // 300ms延迟
+    }, 100); // 减少到100ms延迟，提高响应速度
   };
 
   const handleInputChange = (event) => {
     const newValue = event.target.value;
     setInputValue(newValue);
-    // 使用防抖机制调用onChange
-    debouncedSearch(newValue);
+    // 直接调用onChange，不使用防抖，避免延迟导致的输入问题
+    if (onChange) {
+      onChange(newValue);
+    }
   };
 
   const handleClear = () => {
