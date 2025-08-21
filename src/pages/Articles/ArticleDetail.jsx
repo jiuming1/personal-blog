@@ -100,6 +100,16 @@ const ArticleDetail = () => {
       return `__BLOCK_MATH__${formula}__BLOCK_MATH__`;
     });
     
+    // 处理LaTeX块级数学公式 \[...\]，用特殊标记替换
+    processedContent = processedContent.replace(/\\\\\[([^\]]+)\\\\\]/g, (match, formula) => {
+      return `__BLOCK_MATH__${formula}__BLOCK_MATH__`;
+    });
+    
+    // 处理LaTeX行内数学公式 \(...\)，用特殊标记替换
+    processedContent = processedContent.replace(/\\\\\\(([^)]+)\\\\\\)/g, (match, formula) => {
+      return `__INLINE_MATH__${formula}__INLINE_MATH__`;
+    });
+    
     // 使用marked渲染markdown
     const htmlContent = marked(processedContent);
     
