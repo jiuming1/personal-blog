@@ -226,7 +226,8 @@ const Header = ({ isDark, onToggleTheme, onSidebarToggle }) => {
                         placeholder="搜索文章..."
                         onSearch={(query) => {
                           console.log('搜索:', query);
-                          setSearchOpen(false);
+                          // 移除自动关闭搜索栏的逻辑，让用户可以连续输入
+                          // setSearchOpen(false);
                         }}
                       />
                     </motion.div>
