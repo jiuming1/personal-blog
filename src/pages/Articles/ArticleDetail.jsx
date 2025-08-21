@@ -26,13 +26,14 @@ import {
 import { motion } from 'framer-motion';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
-import { InlineMath, BlockMath } from 'react-katex';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getArticleById, getAllArticles } from '../../data/articles';
 import { incrementArticleView } from '../../utils/viewCounter';
 
 /**
- * 渲染包含数学公式的内容组件 - 采用新的渲染逻辑
+ * 渲染包含数学公式的内容组件 - 使用原生KaTeX库
  */
 const MathContent = ({ content }) => {
   const renderContent = () => {
@@ -42,8 +43,12 @@ const MathContent = ({ content }) => {
       if (part.startsWith('__INLINE_MATH__') && part.endsWith('__INLINE_MATH__')) {
         const formula = part.replace(/__INLINE_MATH__/g, '');
         try {
+          const html = katex.renderToString(formula, {
+            throwOnError: false,
+            displayMode: false
+          });
           return (
-            <InlineMath key={index} math={formula} />
+            <span key={index} dangerouslySetInnerHTML={{ __html: html }} />
           );
         } catch (error) {
           console.error('Error rendering inline math:', error);
@@ -52,8 +57,12 @@ const MathContent = ({ content }) => {
       } else if (part.startsWith('__BLOCK_MATH__') && part.endsWith('__BLOCK_MATH__')) {
         const formula = part.replace(/__BLOCK_MATH__/g, '');
         try {
+          const html = katex.renderToString(formula, {
+            throwOnError: false,
+            displayMode: true
+          });
           return (
-            <BlockMath key={index} math={formula} />
+            <div key={index} dangerouslySetInnerHTML={{ __html: html }} style={{ textAlign: 'center', margin: '1em 0' }} />
           );
         } catch (error) {
           console.error('Error rendering block math:', error);
