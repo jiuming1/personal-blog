@@ -26,9 +26,39 @@ import {
 import { motion } from 'framer-motion';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
+import { InlineMath, BlockMath } from 'react-katex';
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getArticleById, getAllArticles } from '../../data/articles';
 import { incrementArticleView } from '../../utils/viewCounter';
+
+/**
+ * 渲染包含数学公式的内容组件
+ */
+const MathContent = ({ content }) => {
+  const renderContent = () => {
+    const parts = content.split(/(__INLINE_MATH__.*?__INLINE_MATH__|__BLOCK_MATH__.*?__BLOCK_MATH__)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('__INLINE_MATH__') && part.endsWith('__INLINE_MATH__')) {
+        const formula = part.replace(/__INLINE_MATH__/g, '');
+        return (
+          <InlineMath key={index} math={formula} />
+        );
+      } else if (part.startsWith('__BLOCK_MATH__') && part.endsWith('__BLOCK_MATH__')) {
+        const formula = part.replace(/__BLOCK_MATH__/g, '');
+        return (
+          <BlockMath key={index} math={formula} />
+        );
+      } else {
+        return (
+          <span key={index} dangerouslySetInnerHTML={{ __html: part }} />
+        );
+      }
+    });
+  };
+
+  return <div>{renderContent()}</div>;
+};
 
 /**
  * 文章详情页面
@@ -55,6 +85,27 @@ const ArticleDetail = () => {
     });
   }, []);
 
+  // 自定义markdown渲染器，支持数学公式
+  const renderMarkdownWithMath = (content) => {
+    // 先处理数学公式，用特殊标记替换
+    let processedContent = content;
+    
+    // 处理行内数学公式 $...$，用特殊标记替换
+    processedContent = processedContent.replace(/\$([^\$]+)\$/g, (match, formula) => {
+      return `__INLINE_MATH__${formula}__INLINE_MATH__`;
+    });
+    
+    // 处理块级数学公式 $$...$$，用特殊标记替换
+    processedContent = processedContent.replace(/\$\$([^\$]+)\$\$/g, (match, formula) => {
+      return `__BLOCK_MATH__${formula}__BLOCK_MATH__`;
+    });
+    
+    // 使用marked渲染markdown
+    const htmlContent = marked(processedContent);
+    
+    return htmlContent;
+  };
+
   useEffect(() => {
     const currentArticle = getArticleById(id);
     if (currentArticle) {
@@ -72,18 +123,52 @@ const ArticleDetail = () => {
     }
   }, [id]);
 
-  // 当文章内容更新后，确保目录能正确生成
+  // 当文章内容更新后，确保目录能正确生成并渲染数学公式
   useEffect(() => {
     if (article?.content) {
       // 延迟一点时间确保DOM已经更新
       const timer = setTimeout(() => {
         // 触发一个自定义事件，通知目录组件内容已更新
         window.dispatchEvent(new CustomEvent('articleContentUpdated'));
+        
+        // 渲染数学公式
+        renderMathInElement();
       }, 500);
       
       return () => clearTimeout(timer);
     }
   }, [article?.content]);
+
+  // 渲染数学公式的函数
+  const renderMathInElement = () => {
+    // 渲染行内数学公式
+    const inlineMathElements = document.querySelectorAll('.math-inline');
+    inlineMathElements.forEach((element) => {
+      try {
+        const formula = element.textContent;
+        const mathElement = document.createElement('span');
+        mathElement.innerHTML = `<span class="katex">${formula}</span>`;
+        element.innerHTML = '';
+        element.appendChild(mathElement);
+      } catch (error) {
+        console.error('Error rendering inline math:', error);
+      }
+    });
+    
+    // 渲染块级数学公式
+    const blockMathElements = document.querySelectorAll('.math-block');
+    blockMathElements.forEach((element) => {
+      try {
+        const formula = element.textContent;
+        const mathElement = document.createElement('div');
+        mathElement.innerHTML = `<div class="katex-display">${formula}</div>`;
+        element.innerHTML = '';
+        element.appendChild(mathElement);
+      } catch (error) {
+        console.error('Error rendering block math:', error);
+      }
+    });
+  };
 
   if (!article) {
     return (
@@ -443,10 +528,9 @@ const ArticleDetail = () => {
                     },
                   },
                 }}
-                                 dangerouslySetInnerHTML={{ 
-                   __html: marked(article.content)
-                 }}
-              />
+               >
+                 <MathContent content={renderMarkdownWithMath(article.content)} />
+               </Box>
             </Box>
           </Paper>
                                </Box>
