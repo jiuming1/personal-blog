@@ -32,6 +32,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getAllArticles, getArticlesByCategory, searchArticles } from '../../data/articles';
+import SearchBar from '../../components/Common/SearchBar';
 
 /**
  * 文章列表页面
@@ -44,10 +45,8 @@ const ArticlesList = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('date');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   
   const articlesPerPage = 9;
-  const searchInputRef = useRef(null);
 
   // 从URL参数中读取搜索查询
   useEffect(() => {
@@ -127,32 +126,10 @@ const ArticlesList = () => {
 
   const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
 
-  // 处理搜索 - 只更新搜索查询，不触发其他状态更新
-  const handleSearch = (event) => {
-    const value = event.target.value;
-    setSearchQuery(value);
+  // 处理搜索 - 使用SearchBar的回调
+  const handleSearch = (query) => {
+    setSearchQuery(query);
   };
-
-  // 处理搜索框焦点
-  const handleSearchFocus = () => {
-    setIsSearchFocused(true);
-  };
-
-  const handleSearchBlur = () => {
-    setIsSearchFocused(false);
-  };
-
-  // 恢复搜索框焦点
-  useEffect(() => {
-    if (isSearchFocused && searchInputRef.current) {
-      // 使用setTimeout确保在DOM更新后恢复焦点
-      setTimeout(() => {
-        if (searchInputRef.current) {
-          searchInputRef.current.focus();
-        }
-      }, 0);
-    }
-  }, [filteredArticles, isSearchFocused]);
 
   // 处理分类筛选
   const handleCategoryChange = (event) => {
@@ -182,27 +159,6 @@ const ArticlesList = () => {
     setCurrentPage(1);
   };
 
-  // 使用memo包装搜索框组件，防止不必要的重新渲染
-  const SearchField = memo(({ value, onChange, onFocus, onBlur, placeholder, inputRef }) => (
-    <TextField
-      key="search-field" // 添加稳定的key
-      fullWidth
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      inputRef={inputRef}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <SearchIcon />
-          </InputAdornment>
-        ),
-      }}
-    />
-  ));
-
   // 筛选器组件
   const FilterSection = () => (
     <Paper sx={{ p: 3, mb: 4 }}>
@@ -220,14 +176,11 @@ const ArticlesList = () => {
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {/* 搜索框 */}
-          <SearchField
-            value={searchQuery}
-            onChange={handleSearch}
-            onFocus={handleSearchFocus}
-            onBlur={handleSearchBlur}
+          {/* 搜索框 - 使用SearchBar组件 */}
+          <SearchBar
             placeholder="搜索文章标题或内容..."
-            inputRef={searchInputRef}
+            onSearch={handleSearch}
+            showSuggestions={false} // 在文章列表页面不显示建议，避免重复
           />
 
           {/* 筛选选项 */}
