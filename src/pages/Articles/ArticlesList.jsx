@@ -43,9 +43,11 @@ const ArticleListSearchField = memo(({ value, onChange, placeholder }) => {
   const [isFocused, setIsFocused] = useState(false);
   const searchTimeoutRef = useRef(null);
 
-  // 同步外部value变化
+  // 同步外部value变化 - 只在组件初始化或value真正改变时更新
   useEffect(() => {
-    setInputValue(value || '');
+    if (value !== inputValue) {
+      setInputValue(value || '');
+    }
   }, [value]);
 
   // 防抖搜索函数
