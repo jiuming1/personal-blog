@@ -18,6 +18,7 @@ import {
   Paper,
   useTheme,
   InputAdornment,
+  IconButton,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -27,12 +28,100 @@ import {
   Visibility as ViewIcon,
   Person as AuthorIcon,
   Category as CategoryIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getAllArticles, getArticlesByCategory, searchArticles } from '../../data/articles';
-import SearchBar from '../../components/Common/SearchBar';
+
+/**
+ * 文章列表页面专用搜索组件
+ */
+const ArticleListSearchField = memo(({ value, onChange, placeholder }) => {
+  const [inputValue, setInputValue] = useState(value || '');
+  const [isFocused, setIsFocused] = useState(false);
+
+  // 同步外部value变化
+  useEffect(() => {
+    setInputValue(value || '');
+  }, [value]);
+
+  const handleInputChange = (event) => {
+    const newValue = event.target.value;
+    setInputValue(newValue);
+    // 实时调用onChange，但不触发页面刷新
+    if (onChange) {
+      onChange(newValue);
+    }
+  };
+
+  const handleClear = () => {
+    setInputValue('');
+    if (onChange) {
+      onChange('');
+    }
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      // 按回车键时确保搜索
+      if (onChange) {
+        onChange(inputValue);
+      }
+    }
+  };
+
+  return (
+    <TextField
+      fullWidth
+      placeholder={placeholder}
+      value={inputValue}
+      onChange={handleInputChange}
+      onKeyPress={handleKeyPress}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      inputProps={{
+        lang: 'zh-CN',
+        autoComplete: 'off',
+        autoCorrect: 'off',
+        autoCapitalize: 'off',
+        spellCheck: 'false',
+      }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon color="action" />
+          </InputAdornment>
+        ),
+        endAdornment: inputValue && (
+          <InputAdornment position="end">
+            <IconButton
+              size="small"
+              onClick={handleClear}
+              edge="end"
+              aria-label="清除搜索"
+            >
+              <ClearIcon />
+            </IconButton>
+          </InputAdornment>
+        ),
+      }}
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          borderRadius: 2,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+          },
+          '&.Mui-focused': {
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          },
+        },
+      }}
+    />
+  );
+});
 
 /**
  * 文章列表页面
@@ -126,7 +215,7 @@ const ArticlesList = () => {
 
   const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
 
-  // 处理搜索 - 使用SearchBar的回调
+  // 处理搜索 - 实时更新搜索查询
   const handleSearch = (query) => {
     setSearchQuery(query);
     setCurrentPage(1); // 重置到第一页，确保能看到搜索结果
@@ -177,12 +266,11 @@ const ArticlesList = () => {
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {/* 搜索框 - 使用SearchBar组件 */}
-          <SearchBar
+          {/* 搜索框 - 使用自定义搜索组件 */}
+          <ArticleListSearchField
+            value={searchQuery}
+            onChange={handleSearch}
             placeholder="搜索文章标题或内容..."
-            onSearch={handleSearch}
-            onInputChange={handleSearch}
-            showSuggestions={false} // 在文章列表页面不显示建议，避免重复
           />
 
           {/* 筛选选项 */}
