@@ -29,7 +29,7 @@ import {
   Category as CategoryIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getAllArticles, getArticlesByCategory, searchArticles } from '../../data/articles';
 
@@ -38,6 +38,7 @@ import { getAllArticles, getArticlesByCategory, searchArticles } from '../../dat
  */
 const ArticlesList = () => {
   const theme = useTheme();
+  const location = useLocation();
   const [articles] = useState(() => getAllArticles()); // 只在初始化时调用一次
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -47,6 +48,15 @@ const ArticlesList = () => {
   
   const articlesPerPage = 9;
   const searchInputRef = useRef(null);
+
+  // 从URL参数中读取搜索查询
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+      setSearchQuery(decodeURIComponent(searchParam));
+    }
+  }, [location.search]);
 
   // 动画变体
   const containerVariants = {

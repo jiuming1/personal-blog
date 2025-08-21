@@ -23,12 +23,10 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { SITE_CONFIG, ROUTES } from '../../utils/constants';
 import SearchBar from '../Common/SearchBar';
 import ThemeToggle from '../Common/ThemeToggle';
-
-
 
 /**
  * Header组件
@@ -41,6 +39,7 @@ const Header = ({ isDark, onToggleTheme, onSidebarToggle }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const muiTheme = useMuiTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   
@@ -68,7 +67,23 @@ const Header = ({ isDark, onToggleTheme, onSidebarToggle }) => {
 
   // 检查当前路径是否激活
   const isActivePath = (path) => {
-    return location.pathname === path;
+    if (path === ROUTES.HOME) {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  // 处理搜索
+  const handleSearch = (query) => {
+    console.log('搜索:', query);
+    // 导航到文章列表页面并传递搜索参数
+    if (query.trim()) {
+      navigate(`${ROUTES.ARTICLES}?search=${encodeURIComponent(query)}`);
+    } else {
+      navigate(ROUTES.ARTICLES);
+    }
+    // 关闭搜索栏
+    setSearchOpen(false);
   };
 
   // 桌面端导航菜单
@@ -224,11 +239,7 @@ const Header = ({ isDark, onToggleTheme, onSidebarToggle }) => {
                     >
                       <SearchBar
                         placeholder="搜索文章..."
-                        onSearch={(query) => {
-                          console.log('搜索:', query);
-                          // 移除自动关闭搜索栏的逻辑，让用户可以连续输入
-                          // setSearchOpen(false);
-                        }}
+                        onSearch={handleSearch}
                       />
                     </motion.div>
                   )}
