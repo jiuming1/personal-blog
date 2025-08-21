@@ -32,7 +32,7 @@ import { getArticleById, getAllArticles } from '../../data/articles';
 import { incrementArticleView } from '../../utils/viewCounter';
 
 /**
- * 渲染包含数学公式的内容组件
+ * 渲染包含数学公式的内容组件 - 采用新的渲染逻辑
  */
 const MathContent = ({ content }) => {
   const renderContent = () => {
@@ -41,14 +41,24 @@ const MathContent = ({ content }) => {
     return parts.map((part, index) => {
       if (part.startsWith('__INLINE_MATH__') && part.endsWith('__INLINE_MATH__')) {
         const formula = part.replace(/__INLINE_MATH__/g, '');
-        return (
-          <InlineMath key={index} math={formula} />
-        );
+        try {
+          return (
+            <InlineMath key={index} math={formula} />
+          );
+        } catch (error) {
+          console.error('Error rendering inline math:', error);
+          return <span key={index} style={{ color: 'red' }}>{formula}</span>;
+        }
       } else if (part.startsWith('__BLOCK_MATH__') && part.endsWith('__BLOCK_MATH__')) {
         const formula = part.replace(/__BLOCK_MATH__/g, '');
-        return (
-          <BlockMath key={index} math={formula} />
-        );
+        try {
+          return (
+            <BlockMath key={index} math={formula} />
+          );
+        } catch (error) {
+          console.error('Error rendering block math:', error);
+          return <div key={index} style={{ color: 'red', textAlign: 'center' }}>{formula}</div>;
+        }
       } else {
         return (
           <span key={index} dangerouslySetInnerHTML={{ __html: part }} />
@@ -85,20 +95,10 @@ const ArticleDetail = () => {
     });
   }, []);
 
-  // 自定义markdown渲染器，支持数学公式
+  // 自定义markdown渲染器，支持数学公式 - 采用新的渲染逻辑
   const renderMarkdownWithMath = (content) => {
     // 先处理数学公式，用特殊标记替换
     let processedContent = content;
-    
-    // 处理行内数学公式 $...$，用特殊标记替换
-    processedContent = processedContent.replace(/\$([^\$]+)\$/g, (match, formula) => {
-      return `__INLINE_MATH__${formula}__INLINE_MATH__`;
-    });
-    
-    // 处理块级数学公式 $$...$$，用特殊标记替换
-    processedContent = processedContent.replace(/\$\$([^\$]+)\$\$/g, (match, formula) => {
-      return `__BLOCK_MATH__${formula}__BLOCK_MATH__`;
-    });
     
     // 处理LaTeX块级数学公式 \[...\]，用特殊标记替换
     processedContent = processedContent.replace(/\\\\\[([^\]]+)\\\\\]/g, (match, formula) => {
@@ -108,6 +108,16 @@ const ArticleDetail = () => {
     // 处理LaTeX行内数学公式 \(...\)，用特殊标记替换
     processedContent = processedContent.replace(/\\\\\\(([^)]+)\\\\\\)/g, (match, formula) => {
       return `__INLINE_MATH__${formula}__INLINE_MATH__`;
+    });
+    
+    // 处理美元符号行内数学公式 $...$
+    processedContent = processedContent.replace(/\$([^\$]+)\$/g, (match, formula) => {
+      return `__INLINE_MATH__${formula}__INLINE_MATH__`;
+    });
+    
+    // 处理美元符号块级数学公式 $$...$$
+    processedContent = processedContent.replace(/\$\$([^\$]+)\$\$/g, (match, formula) => {
+      return `__BLOCK_MATH__${formula}__BLOCK_MATH__`;
     });
     
     // 使用marked渲染markdown
@@ -143,6 +153,13 @@ const ArticleDetail = () => {
         
         // 渲染数学公式
         renderMathInElement();
+        
+        // 调试：检查数学公式匹配情况
+        console.log('Article content length:', article.content.length);
+        const latexBlockMatches = article.content.match(/\\\\\[([^\]]+)\\\\\]/g);
+        const latexInlineMatches = article.content.match(/\\\\\\(([^)]+)\\\\\\)/g);
+        console.log('LaTeX block matches:', latexBlockMatches);
+        console.log('LaTeX inline matches:', latexInlineMatches);
       }, 500);
       
       return () => clearTimeout(timer);
