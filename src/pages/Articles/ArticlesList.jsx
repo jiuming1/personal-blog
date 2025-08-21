@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -39,14 +39,12 @@ import { getAllArticles, getArticlesByCategory, searchArticles } from '../../dat
 const ArticlesList = () => {
   const theme = useTheme();
   const [articles] = useState(() => getAllArticles()); // 只在初始化时调用一次
-  const [filteredArticles, setFilteredArticles] = useState(articles);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('date');
   
   const articlesPerPage = 9;
-  const searchTimeoutRef = useRef(null);
 
   // 动画变体
   const containerVariants = {
@@ -71,18 +69,18 @@ const ArticlesList = () => {
     },
   };
 
-  // 筛选和搜索逻辑
-  const filterArticles = (query, category, sort) => {
+  // 使用useMemo计算筛选结果，避免状态更新
+  const filteredArticles = useMemo(() => {
     let filtered = [...articles];
 
     // 按分类筛选
-    if (category) {
-      filtered = filtered.filter(article => article.category === category);
+    if (selectedCategory) {
+      filtered = filtered.filter(article => article.category === selectedCategory);
     }
 
     // 按搜索关键词筛选
-    if (query.trim()) {
-      const lowercaseQuery = query.toLowerCase();
+    if (searchQuery.trim()) {
+      const lowercaseQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(article => 
         article.title.toLowerCase().includes(lowercaseQuery) ||
         article.excerpt.toLowerCase().includes(lowercaseQuery) ||
@@ -92,7 +90,7 @@ const ArticlesList = () => {
 
     // 排序
     filtered.sort((a, b) => {
-      switch (sort) {
+      switch (sortBy) {
         case 'date':
           return new Date(b.publishDate) - new Date(a.publishDate);
         case 'views':
@@ -107,14 +105,7 @@ const ArticlesList = () => {
     });
 
     return filtered;
-  };
-
-  // 更新筛选结果
-  const updateFilteredArticles = (query, category, sort) => {
-    const filtered = filterArticles(query, category, sort);
-    setFilteredArticles(filtered);
-    setCurrentPage(1);
-  };
+  }, [articles, searchQuery, selectedCategory, sortBy]);
 
   // 分页逻辑
   const paginatedArticles = useMemo(() => {
@@ -124,34 +115,24 @@ const ArticlesList = () => {
 
   const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
 
-  // 处理搜索 - 使用简单的防抖
+  // 处理搜索 - 只更新搜索查询，不触发其他状态更新
   const handleSearch = (event) => {
     const value = event.target.value;
     setSearchQuery(value);
-    
-    // 清除之前的定时器
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-    
-    // 设置新的定时器
-    searchTimeoutRef.current = setTimeout(() => {
-      updateFilteredArticles(value, selectedCategory, sortBy);
-    }, 300);
   };
 
   // 处理分类筛选
   const handleCategoryChange = (event) => {
     const category = event.target.value;
     setSelectedCategory(category);
-    updateFilteredArticles(searchQuery, category, sortBy);
+    setCurrentPage(1); // 重置到第一页
   };
 
   // 处理排序
   const handleSortChange = (event) => {
     const sort = event.target.value;
     setSortBy(sort);
-    updateFilteredArticles(searchQuery, selectedCategory, sort);
+    setCurrentPage(1); // 重置到第一页
   };
 
   // 处理分页
@@ -165,22 +146,10 @@ const ArticlesList = () => {
     setSearchQuery('');
     setSelectedCategory('');
     setSortBy('date');
-    updateFilteredArticles('', '', 'date');
-    
-    // 清除定时器
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
+    setCurrentPage(1);
   };
 
-  // 组件卸载时清理定时器
-  useEffect(() => {
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, []);
+
 
   // 筛选器组件
   const FilterSection = () => (
