@@ -72,7 +72,7 @@ const ArticlesList = () => {
 
   // 筛选和搜索逻辑
   useEffect(() => {
-    let filtered = articles;
+    let filtered = getAllArticles(); // 直接获取所有文章，包含浏览量
 
     // 按分类筛选
     if (selectedCategory) {
@@ -98,11 +98,6 @@ const ArticlesList = () => {
           return viewsB - viewsA;
         case 'title':
           return a.title.localeCompare(b.title, 'zh-CN');
-        case 'likes':
-          // 添加按点赞数排序
-          const likesA = a.likes || 0;
-          const likesB = b.likes || 0;
-          return likesB - likesA;
         default:
           return 0;
       }
@@ -110,7 +105,7 @@ const ArticlesList = () => {
 
     setFilteredArticles(filtered);
     setCurrentPage(1); // 重置到第一页
-  }, [articles, searchQuery, selectedCategory, sortBy]);
+  }, [searchQuery, selectedCategory, sortBy]); // 移除articles依赖
 
   // 分页逻辑
   const paginatedArticles = useMemo(() => {
@@ -221,7 +216,6 @@ const ArticlesList = () => {
               >
                 <MenuItem value="date">按日期</MenuItem>
                 <MenuItem value="views">按浏览量</MenuItem>
-                <MenuItem value="likes">按点赞数</MenuItem>
                 <MenuItem value="title">按标题</MenuItem>
               </Select>
             </FormControl>
