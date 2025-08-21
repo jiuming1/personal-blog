@@ -180,6 +180,7 @@ const ArticlesList = () => {
           <SearchBar
             placeholder="搜索文章标题或内容..."
             onSearch={handleSearch}
+            onInputChange={handleSearch}
             showSuggestions={false} // 在文章列表页面不显示建议，避免重复
           />
 

@@ -22,6 +22,7 @@ import { getAllArticles } from '../../data/articles';
  * @param {Object} props - 组件属性
  * @param {Function} props.onSearch - 搜索回调函数
  * @param {Function} props.onSuggestionClick - 建议点击回调函数
+ * @param {Function} props.onInputChange - 输入变化回调函数
  * @param {Array} props.suggestions - 搜索建议
  * @param {string} props.placeholder - 占位符文本
  * @param {boolean} props.showSuggestions - 是否显示建议
@@ -30,6 +31,7 @@ import { getAllArticles } from '../../data/articles';
 const SearchBar = ({
   onSearch,
   onSuggestionClick,
+  onInputChange,
   suggestions = [],
   placeholder = '搜索...',
   showSuggestions = true,
@@ -64,6 +66,11 @@ const SearchBar = ({
     const value = event.target.value;
     setQuery(value);
     setShowResults(value.length > 0);
+    
+    // 调用输入变化回调
+    if (onInputChange) {
+      onInputChange(value);
+    }
   };
 
   const handleClear = () => {
