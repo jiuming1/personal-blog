@@ -42,10 +42,12 @@ const ArticleListSearchField = memo(({ value, onChange, placeholder }) => {
   const [inputValue, setInputValue] = useState(value || '');
   const [isFocused, setIsFocused] = useState(false);
   const searchTimeoutRef = useRef(null);
+  const lastValueRef = useRef(value);
 
   // 同步外部value变化 - 只在组件初始化或value真正改变时更新
   useEffect(() => {
-    if (value !== inputValue) {
+    if (value !== lastValueRef.current) {
+      lastValueRef.current = value;
       setInputValue(value || '');
     }
   }, [value]);
