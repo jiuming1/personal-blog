@@ -129,6 +129,7 @@ const ArticlesList = () => {
   // 处理搜索 - 使用SearchBar的回调
   const handleSearch = (query) => {
     setSearchQuery(query);
+    setCurrentPage(1); // 重置到第一页，确保能看到搜索结果
   };
 
   // 处理分类筛选
