@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Box,
   Container,
@@ -32,7 +32,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getAllArticles, getArticlesByCategory, searchArticles } from '../../data/articles';
-import { debounce } from '../../utils/helpers';
 
 /**
  * 文章列表页面
@@ -42,20 +41,12 @@ const ArticlesList = () => {
   const [articles] = useState(() => getAllArticles()); // 只在初始化时调用一次
   const [filteredArticles, setFilteredArticles] = useState(articles);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('date');
   
   const articlesPerPage = 9;
-
-  // 防抖搜索处理
-  const debouncedSetSearchQuery = useCallback(
-    debounce((query) => {
-      setDebouncedSearchQuery(query);
-    }, 300),
-    []
-  );
+  const searchTimeoutRef = useRef(null);
 
   // 动画变体
   const containerVariants = {
@@ -80,18 +71,18 @@ const ArticlesList = () => {
     },
   };
 
-  // 筛选和搜索逻辑 - 使用防抖后的搜索查询
-  useEffect(() => {
-    let filtered = [...articles]; // 使用缓存的articles数据
+  // 筛选和搜索逻辑
+  const filterArticles = (query, category, sort) => {
+    let filtered = [...articles];
 
     // 按分类筛选
-    if (selectedCategory) {
-      filtered = filtered.filter(article => article.category === selectedCategory);
+    if (category) {
+      filtered = filtered.filter(article => article.category === category);
     }
 
-    // 按搜索关键词筛选 - 使用防抖后的查询
-    if (debouncedSearchQuery.trim()) {
-      const lowercaseQuery = debouncedSearchQuery.toLowerCase();
+    // 按搜索关键词筛选
+    if (query.trim()) {
+      const lowercaseQuery = query.toLowerCase();
       filtered = filtered.filter(article => 
         article.title.toLowerCase().includes(lowercaseQuery) ||
         article.excerpt.toLowerCase().includes(lowercaseQuery) ||
@@ -101,11 +92,10 @@ const ArticlesList = () => {
 
     // 排序
     filtered.sort((a, b) => {
-      switch (sortBy) {
+      switch (sort) {
         case 'date':
           return new Date(b.publishDate) - new Date(a.publishDate);
         case 'views':
-          // 确保views字段存在，如果不存在则使用0
           const viewsA = a.views || 0;
           const viewsB = b.views || 0;
           return viewsB - viewsA;
@@ -116,9 +106,15 @@ const ArticlesList = () => {
       }
     });
 
+    return filtered;
+  };
+
+  // 更新筛选结果
+  const updateFilteredArticles = (query, category, sort) => {
+    const filtered = filterArticles(query, category, sort);
     setFilteredArticles(filtered);
-    setCurrentPage(1); // 重置到第一页
-  }, [articles, debouncedSearchQuery, selectedCategory, sortBy]); // 使用防抖后的搜索查询
+    setCurrentPage(1);
+  };
 
   // 分页逻辑
   const paginatedArticles = useMemo(() => {
@@ -128,21 +124,34 @@ const ArticlesList = () => {
 
   const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
 
-  // 处理搜索 - 立即更新显示值，但防抖更新筛选逻辑
+  // 处理搜索 - 使用简单的防抖
   const handleSearch = (event) => {
     const value = event.target.value;
-    setSearchQuery(value); // 立即更新输入框显示
-    debouncedSetSearchQuery(value); // 防抖更新筛选逻辑
+    setSearchQuery(value);
+    
+    // 清除之前的定时器
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // 设置新的定时器
+    searchTimeoutRef.current = setTimeout(() => {
+      updateFilteredArticles(value, selectedCategory, sortBy);
+    }, 300);
   };
 
   // 处理分类筛选
   const handleCategoryChange = (event) => {
-    setSelectedCategory(event.target.value);
+    const category = event.target.value;
+    setSelectedCategory(category);
+    updateFilteredArticles(searchQuery, category, sortBy);
   };
 
   // 处理排序
   const handleSortChange = (event) => {
-    setSortBy(event.target.value);
+    const sort = event.target.value;
+    setSortBy(sort);
+    updateFilteredArticles(searchQuery, selectedCategory, sort);
   };
 
   // 处理分页
@@ -154,10 +163,24 @@ const ArticlesList = () => {
   // 清除筛选
   const clearFilters = () => {
     setSearchQuery('');
-    setDebouncedSearchQuery('');
     setSelectedCategory('');
     setSortBy('date');
+    updateFilteredArticles('', '', 'date');
+    
+    // 清除定时器
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
   };
+
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // 筛选器组件
   const FilterSection = () => (
