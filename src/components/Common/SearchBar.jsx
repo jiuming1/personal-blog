@@ -134,6 +134,13 @@ const SearchBar = ({
           onKeyPress={handleKeyPress}
           placeholder={placeholder}
           variant="outlined"
+          inputProps={{
+            lang: 'zh-CN',
+            autoComplete: 'off',
+            autoCorrect: 'off',
+            autoCapitalize: 'off',
+            spellCheck: 'false',
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
