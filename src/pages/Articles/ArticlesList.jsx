@@ -38,7 +38,7 @@ import { getAllArticles, getArticlesByCategory, searchArticles } from '../../dat
  */
 const ArticlesList = () => {
   const theme = useTheme();
-  const [articles, setArticles] = useState(getAllArticles());
+  const [articles] = useState(() => getAllArticles()); // 只在初始化时调用一次
   const [filteredArticles, setFilteredArticles] = useState(articles);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -72,17 +72,20 @@ const ArticlesList = () => {
 
   // 筛选和搜索逻辑
   useEffect(() => {
-    let filtered = getAllArticles(); // 直接获取所有文章，包含浏览量
+    let filtered = [...articles]; // 使用缓存的articles数据
 
     // 按分类筛选
     if (selectedCategory) {
-      filtered = getArticlesByCategory(selectedCategory);
+      filtered = filtered.filter(article => article.category === selectedCategory);
     }
 
     // 按搜索关键词筛选
     if (searchQuery.trim()) {
-      filtered = searchArticles(searchQuery).filter(article => 
-        !selectedCategory || article.category === selectedCategory
+      const lowercaseQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(article => 
+        article.title.toLowerCase().includes(lowercaseQuery) ||
+        article.excerpt.toLowerCase().includes(lowercaseQuery) ||
+        (article.tags && article.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)))
       );
     }
 
@@ -105,7 +108,7 @@ const ArticlesList = () => {
 
     setFilteredArticles(filtered);
     setCurrentPage(1); // 重置到第一页
-  }, [searchQuery, selectedCategory, sortBy]); // 移除articles依赖
+  }, [articles, searchQuery, selectedCategory, sortBy]); // 添加articles依赖，但articles不会变化
 
   // 分页逻辑
   const paginatedArticles = useMemo(() => {
