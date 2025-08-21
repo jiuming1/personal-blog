@@ -44,7 +44,7 @@ const SearchBar = ({
 
   // 生成搜索建议
   const generatedSuggestions = useMemo(() => {
-    if (!query.trim() || query.length < 2) return [];
+    if (!query.trim() || query.length < 1) return [];
     
     const lowercaseQuery = query.toLowerCase();
     const matchingArticles = allArticles.filter(article => 
