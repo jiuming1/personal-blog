@@ -26,58 +26,23 @@ import {
 import { motion } from 'framer-motion';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
-import katex from 'katex';
-import 'katex/dist/katex.min.css';
+import MathJax from 'mathjax';
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getArticleById, getAllArticles } from '../../data/articles';
 import { incrementArticleView } from '../../utils/viewCounter';
 
 /**
- * 渲染包含数学公式的内容组件 - 使用DOM后处理
+ * 渲染包含数学公式的内容组件 - 使用MathJax
  */
 const MathContent = ({ content }) => {
   const contentRef = useRef(null);
 
   useEffect(() => {
     if (contentRef.current) {
-      // 在DOM渲染后处理数学公式
-      const container = contentRef.current;
-      
-      // 处理块级数学公式 \\[...\\]
-      const blockMathElements = container.querySelectorAll('p, div');
-      blockMathElements.forEach((element) => {
-        const text = element.textContent;
-        const blockMathRegex = /\\\\\[([^\]]+)\\\\\]/g;
-        if (blockMathRegex.test(text)) {
-          const newText = text.replace(blockMathRegex, (match, formula) => {
-            try {
-              return katex.renderToString(formula, { displayMode: true });
-            } catch (error) {
-              console.error('Error rendering block math:', error);
-              return `<span style="color: red;">${formula}</span>`;
-            }
-          });
-          element.innerHTML = newText;
-        }
+      // 使用MathJax渲染数学公式
+      MathJax.typesetPromise([contentRef.current]).catch((err) => {
+        console.error('MathJax typeset error:', err);
       });
-      
-             // 处理行内数学公式 \\(...\\)
-       const inlineMathElements = container.querySelectorAll('p, div, span');
-       inlineMathElements.forEach((element) => {
-         const text = element.textContent;
-         const inlineMathRegex = new RegExp('\\\\\\\\\\(([^)]+)\\\\\\\\\\)', 'g');
-         if (inlineMathRegex.test(text)) {
-           const newText = text.replace(inlineMathRegex, (match, formula) => {
-             try {
-               return katex.renderToString(formula, { displayMode: false });
-             } catch (error) {
-               console.error('Error rendering inline math:', error);
-               return `<span style="color: red;">${formula}</span>`;
-             }
-           });
-           element.innerHTML = newText;
-         }
-       });
     }
   }, [content]);
 
@@ -109,10 +74,20 @@ const ArticleDetail = () => {
     });
   }, []);
 
-  // 自定义markdown渲染器，支持数学公式 - 使用DOM后处理
+  // 自定义markdown渲染器，支持数学公式 - 使用MathJax
   const renderMarkdownWithMath = (content) => {
-    // 直接使用marked渲染markdown，不预处理数学公式
-    const htmlContent = marked(content);
+    // 预处理数学公式，将LaTeX语法转换为MathJax语法
+    let processedContent = content;
+    
+    // 处理块级数学公式 \\[...\\] -> \[...\]
+    processedContent = processedContent.replace(/\\\\\[([^\]]+)\\\\\]/g, '\\[$1\\]');
+    
+    // 处理行内数学公式 \\(...\\) -> \(...\)
+    processedContent = processedContent.replace(/\\\\\(([^)]+)\\\\\\)/g, '\\($1\\)');
+    
+    // 使用marked渲染markdown
+    const htmlContent = marked(processedContent);
+    
     return htmlContent;
   };
 
@@ -140,15 +115,6 @@ const ArticleDetail = () => {
       const timer = setTimeout(() => {
         // 触发一个自定义事件，通知目录组件内容已更新
         window.dispatchEvent(new CustomEvent('articleContentUpdated'));
-        
-        // 调试：检查数学公式匹配情况
-        console.log('Article content length:', article.content.length);
-        const blockMathRegex = /\\\\\[([^\]]+)\\\\\]/g;
-        const inlineMathRegex = new RegExp('\\\\\\\\\\(([^)]+)\\\\\\\\\\)', 'g');
-        const latexBlockMatches = article.content.match(blockMathRegex);
-        const latexInlineMatches = article.content.match(inlineMathRegex);
-        console.log('LaTeX block matches:', latexBlockMatches);
-        console.log('LaTeX inline matches:', latexInlineMatches);
       }, 500);
       
       return () => clearTimeout(timer);
