@@ -83,7 +83,7 @@ const ArticleDetail = () => {
     processedContent = processedContent.replace(/\\\\\[([^\]]+)\\\\\]/g, '\\[$1\\]');
     
     // 处理行内数学公式 \\(...\\) -> \(...\)
-    processedContent = processedContent.replace(/\\\\\(([^)]+)\\\\\\)/g, '\\($1\\)');
+    processedContent = processedContent.replace(new RegExp('\\\\\\\\\\(([^)]+)\\\\\\\\\\)', 'g'), '\\($1\\)');
     
     // 使用marked渲染markdown
     const htmlContent = marked(processedContent);
