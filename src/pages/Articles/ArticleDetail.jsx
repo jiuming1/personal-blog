@@ -104,18 +104,18 @@ const ArticleDetail = () => {
     });
   }, []);
 
-  // 自定义markdown渲染器，支持数学公式 - 采用新的渲染逻辑
+  // 自定义markdown渲染器，支持数学公式 - 修复正则表达式匹配
   const renderMarkdownWithMath = (content) => {
     // 先处理数学公式，用特殊标记替换
     let processedContent = content;
     
     // 处理LaTeX块级数学公式 \[...\]，用特殊标记替换
-    processedContent = processedContent.replace(/\\\\\[([^\]]+)\\\\\]/g, (match, formula) => {
+    processedContent = processedContent.replace(/\\\[([^\]]+)\\\]/g, (match, formula) => {
       return `__BLOCK_MATH__${formula}__BLOCK_MATH__`;
     });
     
     // 处理LaTeX行内数学公式 \(...\)，用特殊标记替换
-    processedContent = processedContent.replace(/\\\\\\(([^)]+)\\\\\\)/g, (match, formula) => {
+    processedContent = processedContent.replace(/\\\(([^)]+)\\\)/g, (match, formula) => {
       return `__INLINE_MATH__${formula}__INLINE_MATH__`;
     });
     
@@ -165,8 +165,8 @@ const ArticleDetail = () => {
         
         // 调试：检查数学公式匹配情况
         console.log('Article content length:', article.content.length);
-        const latexBlockMatches = article.content.match(/\\\\\[([^\]]+)\\\\\]/g);
-        const latexInlineMatches = article.content.match(/\\\\\\(([^)]+)\\\\\\)/g);
+        const latexBlockMatches = article.content.match(/\\\[([^\]]+)\\\]/g);
+        const latexInlineMatches = article.content.match(/\\\(([^)]+)\\\)/g);
         console.log('LaTeX block matches:', latexBlockMatches);
         console.log('LaTeX inline matches:', latexInlineMatches);
       }, 500);
