@@ -11,10 +11,18 @@
         tex: {
           inlineMath: [['\\(', '\\)']],
           displayMath: [['\\[', '\\]']],
-          processEscapes: true
+          processEscapes: true,
+          packages: ['base', 'ams', 'noerrors', 'noundefined']
         },
         svg: {
           fontCache: 'global'
+        },
+        startup: {
+          pageReady: () => {
+            return MathJax.startup.defaultPageReady().then(() => {
+              console.log('MathJax is ready');
+            });
+          }
         }
       };
     </script>

@@ -42,6 +42,10 @@ const MathContent = ({ content }) => {
       // 等待MathJax加载完成后渲染
       const renderMath = () => {
         if (window.MathJax && window.MathJax.typesetPromise) {
+          // 先清除之前的渲染
+          window.MathJax.typesetClear([contentRef.current]);
+          
+          // 重新渲染数学公式
           window.MathJax.typesetPromise([contentRef.current]).then(() => {
             console.log('MathJax rendering completed');
           }).catch((err) => {
@@ -49,11 +53,12 @@ const MathContent = ({ content }) => {
           });
         } else {
           // 如果MathJax还未加载，稍后重试
-          setTimeout(renderMath, 100);
+          setTimeout(renderMath, 200);
         }
       };
       
-      renderMath();
+      // 延迟一点时间确保DOM已更新
+      setTimeout(renderMath, 100);
     }
   }, [content]);
 
