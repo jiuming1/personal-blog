@@ -31,6 +31,10 @@ const TableOfContents = ({ headings, activeId, onHeadingClick }) => {
   return (
     <Box
       sx={{
+        position: 'fixed',
+        top: '50%',
+        right: 20,
+        transform: 'translateY(-50%)',
         width: 240,
         backgroundColor: 'background.paper',
         borderRadius: 1,
@@ -38,6 +42,8 @@ const TableOfContents = ({ headings, activeId, onHeadingClick }) => {
         border: '1px solid',
         borderColor: 'divider',
         overflow: 'hidden',
+        zIndex: 1000,
+        maxHeight: '80vh',
       }}
     >
       <Box sx={{ 
