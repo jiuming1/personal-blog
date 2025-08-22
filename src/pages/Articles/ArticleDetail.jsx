@@ -353,140 +353,136 @@ const ArticleDetail = () => {
               backgroundColor: 'background.paper',
             }}
           >
-            <Box sx={{ display: 'flex', gap: 4 }}>
-              {/* 文章正文 */}
-              <Box sx={{ flex: 1 }}>
-                <Divider sx={{ mb: 4 }} />
+            {/* 文章正文 */}
+            <Box sx={{ width: '100%' }}>
+              <Divider sx={{ mb: 4 }} />
 
-                {/* 文章正文 */}
-                <Box sx={{ lineHeight: 1.8 }}>
-                  <Box
-                    data-content="article"
-                    ref={(el) => {
-                      if (el) {
-                        // 在DOM元素挂载后立即设置ID
-                        setTimeout(() => {
-                          const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-                          headings.forEach((heading, index) => {
-                            heading.id = `heading-${index}`;
-                            console.log(`ArticleDetail: Set ID for "${heading.textContent.trim()}": heading-${index}`);
-                          });
-                        }, 100);
-                      }
-                    }}
-                    sx={{
+              {/* 文章正文 */}
+              <Box sx={{ lineHeight: 1.8 }}>
+                <Box
+                  data-content="article"
+                  ref={(el) => {
+                    if (el) {
+                      // 在DOM元素挂载后立即设置ID
+                      setTimeout(() => {
+                        const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                        headings.forEach((heading, index) => {
+                          heading.id = `heading-${index}`;
+                          console.log(`ArticleDetail: Set ID for "${heading.textContent.trim()}": heading-${index}`);
+                        });
+                      }, 100);
+                    }
+                  }}
+                  sx={{
+                    mb: 3,
+                    color: 'text.primary',
+                    fontSize: '1.1rem',
+                    scrollBehavior: 'smooth', // 确保平滑滚动
+                    scrollMarginTop: '100px', // 为锚点滚动添加顶部边距
+                    '& h1': {
+                      fontSize: '2.5rem',
+                      fontWeight: 'bold',
+                      mt: 6,
                       mb: 3,
                       color: 'text.primary',
-                      fontSize: '1.1rem',
-                      scrollBehavior: 'smooth', // 确保平滑滚动
-                      scrollMarginTop: '100px', // 为锚点滚动添加顶部边距
-                      '& h1': {
-                        fontSize: '2.5rem',
-                        fontWeight: 'bold',
-                        mt: 6,
-                        mb: 3,
-                        color: 'text.primary',
-                        borderBottom: '2px solid',
-                        borderColor: 'primary.main',
-                        pb: 1,
-                      },
-                      '& h2': {
-                        fontSize: '2rem',
-                        fontWeight: 'bold',
-                        mt: 5,
-                        mb: 2.5,
-                        color: 'text.primary',
-                      },
-                      '& h3': {
-                        fontSize: '1.5rem',
-                        fontWeight: 'bold',
-                        mt: 4,
-                        mb: 2,
-                        color: 'text.primary',
-                      },
-                      '& h4, & h5, & h6': {
-                        fontSize: '1.25rem',
-                        fontWeight: 'bold',
-                        mt: 3,
-                        mb: 1.5,
-                        color: 'text.primary',
-                      },
-                      '& p': {
-                        mb: 2.5,
-                        lineHeight: 1.8,
-                      },
-                      '& ul, & ol': {
-                        mb: 2.5,
-                        pl: 3,
-                      },
-                      '& li': {
-                        mb: 1,
-                      },
-                      '& blockquote': {
-                        borderLeft: '4px solid',
-                        borderColor: 'primary.main',
-                        pl: 3,
-                        py: 1,
-                        my: 3,
-                        backgroundColor: 'action.hover',
-                        fontStyle: 'italic',
-                      },
+                      borderBottom: '2px solid',
+                      borderColor: 'primary.main',
+                      pb: 1,
+                    },
+                    '& h2': {
+                      fontSize: '2rem',
+                      fontWeight: 'bold',
+                      mt: 5,
+                      mb: 2.5,
+                      color: 'text.primary',
+                    },
+                    '& h3': {
+                      fontSize: '1.5rem',
+                      fontWeight: 'bold',
+                      mt: 4,
+                      mb: 2,
+                      color: 'text.primary',
+                    },
+                    '& h4, & h5, & h6': {
+                      fontSize: '1.25rem',
+                      fontWeight: 'bold',
+                      mt: 3,
+                      mb: 1.5,
+                      color: 'text.primary',
+                    },
+                    '& p': {
+                      mb: 2.5,
+                      lineHeight: 1.8,
+                    },
+                    '& ul, & ol': {
+                      mb: 2.5,
+                      pl: 3,
+                    },
+                    '& li': {
+                      mb: 1,
+                    },
+                    '& blockquote': {
+                      borderLeft: '4px solid',
+                      borderColor: 'primary.main',
+                      pl: 3,
+                      py: 1,
+                      my: 3,
+                      backgroundColor: 'action.hover',
+                      fontStyle: 'italic',
+                    },
+                    '& code': {
+                      backgroundColor: 'action.hover',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                      fontSize: '0.9em',
+                      fontFamily: 'monospace',
+                    },
+                    '& pre': {
+                      backgroundColor: 'action.hover',
+                      p: 2,
+                      borderRadius: 1,
+                      overflow: 'auto',
+                      mb: 3,
                       '& code': {
-                        backgroundColor: 'action.hover',
-                        px: 1,
-                        py: 0.5,
-                        borderRadius: 1,
-                        fontSize: '0.9em',
-                        fontFamily: 'monospace',
+                        backgroundColor: 'transparent',
+                        p: 0,
                       },
-                      '& pre': {
-                        backgroundColor: 'action.hover',
-                        p: 2,
-                        borderRadius: 1,
-                        overflow: 'auto',
-                        mb: 3,
-                        '& code': {
-                          backgroundColor: 'transparent',
-                          p: 0,
-                        },
-                      },
-                      '& img': {
-                        maxWidth: '100%',
-                        height: 'auto',
-                        borderRadius: 1,
-                        my: 2,
-                      },
-                      '& table': {
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        mb: 3,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        padding: 2,
-                        textAlign: 'left',
-                      },
-                      '& th': {
-                        backgroundColor: 'action.hover',
-                        fontWeight: 'bold',
-                      },
-                    }}
-                   >
-                     <MathContent content={renderMarkdownWithMath(article.content)} />
-                   </Box>
-                </Box>
+                    },
+                    '& img': {
+                      maxWidth: '100%',
+                      height: 'auto',
+                      borderRadius: 1,
+                      my: 2,
+                    },
+                    '& table': {
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      mb: 3,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      padding: 2,
+                      textAlign: 'left',
+                    },
+                    '& th': {
+                      backgroundColor: 'action.hover',
+                      fontWeight: 'bold',
+                    },
+                  }}
+                 >
+                   <MathContent content={renderMarkdownWithMath(article.content)} />
+                 </Box>
               </Box>
-
-              {/* 目录大纲 */}
-              {headings.length > 0 && (
-                <Box sx={{ width: 240, flexShrink: 0 }}>
-                  <TableOfContents
-                    headings={headings}
-                    activeId={activeId}
-                    onHeadingClick={scrollToHeading}
-                  />
-                </Box>
-              )}
             </Box>
+
+            {/* 目录大纲 - 独立定位 */}
+            {headings.length > 0 && (
+              <TableOfContents
+                headings={headings}
+                activeId={activeId}
+                onHeadingClick={scrollToHeading}
+              />
+            )}
           </Paper>
         </motion.div>
 
