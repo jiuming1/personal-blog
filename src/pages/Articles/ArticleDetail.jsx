@@ -26,49 +26,62 @@ import {
 import { motion } from 'framer-motion';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
-import { InlineMath, BlockMath } from 'react-katex';
+import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getArticleById, getAllArticles } from '../../data/articles';
 import { incrementArticleView } from '../../utils/viewCounter';
 
 /**
- * 渲染包含数学公式的内容组件 - 使用react-katex库
+ * 渲染包含数学公式的内容组件 - 使用DOM后处理
  */
 const MathContent = ({ content }) => {
-  const renderContent = () => {
-    const parts = content.split(/(__INLINE_MATH__.*?__INLINE_MATH__|__BLOCK_MATH__.*?__BLOCK_MATH__)/g);
-    
-    return parts.map((part, index) => {
-      if (part.startsWith('__INLINE_MATH__') && part.endsWith('__INLINE_MATH__')) {
-        const formula = part.replace(/__INLINE_MATH__/g, '');
-        try {
-          return (
-            <InlineMath key={index} math={formula} />
-          );
-        } catch (error) {
-          console.error('Error rendering inline math:', error);
-          return <span key={index} style={{ color: 'red' }}>{formula}</span>;
-        }
-      } else if (part.startsWith('__BLOCK_MATH__') && part.endsWith('__BLOCK_MATH__')) {
-        const formula = part.replace(/__BLOCK_MATH__/g, '');
-        try {
-          return (
-            <BlockMath key={index} math={formula} />
-          );
-        } catch (error) {
-          console.error('Error rendering block math:', error);
-          return <div key={index} style={{ color: 'red', textAlign: 'center' }}>{formula}</div>;
-        }
-      } else {
-        return (
-          <span key={index} dangerouslySetInnerHTML={{ __html: part }} />
-        );
-      }
-    });
-  };
+  const contentRef = useRef(null);
 
-  return <div>{renderContent()}</div>;
+  useEffect(() => {
+    if (contentRef.current) {
+      // 在DOM渲染后处理数学公式
+      const container = contentRef.current;
+      
+      // 处理块级数学公式 \\[...\\]
+      const blockMathElements = container.querySelectorAll('p, div');
+      blockMathElements.forEach((element) => {
+        const text = element.textContent;
+        const blockMathRegex = /\\\\\[([^\]]+)\\\\\]/g;
+        if (blockMathRegex.test(text)) {
+          const newText = text.replace(blockMathRegex, (match, formula) => {
+            try {
+              return katex.renderToString(formula, { displayMode: true });
+            } catch (error) {
+              console.error('Error rendering block math:', error);
+              return `<span style="color: red;">${formula}</span>`;
+            }
+          });
+          element.innerHTML = newText;
+        }
+      });
+      
+      // 处理行内数学公式 \\(...\\)
+      const inlineMathElements = container.querySelectorAll('p, div, span');
+      inlineMathElements.forEach((element) => {
+        const text = element.textContent;
+        const inlineMathRegex = /\\\\\(([^)]+)\\\\\\)/g;
+        if (inlineMathRegex.test(text)) {
+          const newText = text.replace(inlineMathRegex, (match, formula) => {
+            try {
+              return katex.renderToString(formula, { displayMode: false });
+            } catch (error) {
+              console.error('Error rendering inline math:', error);
+              return `<span style="color: red;">${formula}</span>`;
+            }
+          });
+          element.innerHTML = newText;
+        }
+      });
+    }
+  }, [content]);
+
+  return <div ref={contentRef} dangerouslySetInnerHTML={{ __html: content }} />;
 };
 
 /**
@@ -96,36 +109,10 @@ const ArticleDetail = () => {
     });
   }, []);
 
-  // 自定义markdown渲染器，支持数学公式 - 使用字符串分割方法
+  // 自定义markdown渲染器，支持数学公式 - 使用DOM后处理
   const renderMarkdownWithMath = (content) => {
-    // 先处理数学公式，用特殊标记替换
-    let processedContent = content;
-    
-    // 处理LaTeX块级数学公式 \\[...\\]
-    const blockMathRegex = /\\\\\[([^\]]+)\\\\\]/g;
-    processedContent = processedContent.replace(blockMathRegex, (match, formula) => {
-      return `__BLOCK_MATH__${formula}__BLOCK_MATH__`;
-    });
-    
-    // 处理LaTeX行内数学公式 \\(...\\)
-    const inlineMathRegex = new RegExp('\\\\\\\\\\(([^)]+)\\\\\\\\\\)', 'g');
-    processedContent = processedContent.replace(inlineMathRegex, (match, formula) => {
-      return `__INLINE_MATH__${formula}__INLINE_MATH__`;
-    });
-    
-    // 处理美元符号行内数学公式 $...$
-    processedContent = processedContent.replace(/\$([^\$]+)\$/g, (match, formula) => {
-      return `__INLINE_MATH__${formula}__INLINE_MATH__`;
-    });
-    
-    // 处理美元符号块级数学公式 $$...$$
-    processedContent = processedContent.replace(/\$\$([^\$]+)\$\$/g, (match, formula) => {
-      return `__BLOCK_MATH__${formula}__BLOCK_MATH__`;
-    });
-    
-    // 使用marked渲染markdown
-    const htmlContent = marked(processedContent);
-    
+    // 直接使用marked渲染markdown，不预处理数学公式
+    const htmlContent = marked(content);
     return htmlContent;
   };
 
