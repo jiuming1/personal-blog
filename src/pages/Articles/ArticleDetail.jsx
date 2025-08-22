@@ -101,13 +101,13 @@ const ArticleDetail = () => {
     // 先处理数学公式，用特殊标记替换
     let processedContent = content;
     
-    // 处理LaTeX块级数学公式 \[...\]，用特殊标记替换
-    processedContent = processedContent.replace(/\\\[([^\]]+)\\\]/g, (match, formula) => {
+    // 处理LaTeX块级数学公式 \\[...\\]，用特殊标记替换
+    processedContent = processedContent.replace(/\\\\\[([^\]]+)\\\\\]/g, (match, formula) => {
       return `__BLOCK_MATH__${formula}__BLOCK_MATH__`;
     });
     
-    // 处理LaTeX行内数学公式 \(...\)，用特殊标记替换
-    processedContent = processedContent.replace(/\\\(([^)]+)\\\)/g, (match, formula) => {
+    // 处理LaTeX行内数学公式 \\(...\\)，用特殊标记替换
+    processedContent = processedContent.replace(/\\\\\(([^)]+)\\\\\\)/g, (match, formula) => {
       return `__INLINE_MATH__${formula}__INLINE_MATH__`;
     });
     
@@ -157,8 +157,8 @@ const ArticleDetail = () => {
         
         // 调试：检查数学公式匹配情况
         console.log('Article content length:', article.content.length);
-        const latexBlockMatches = article.content.match(/\\\[([^\]]+)\\\]/g);
-        const latexInlineMatches = article.content.match(/\\\(([^)]+)\\\)/g);
+        const latexBlockMatches = article.content.match(/\\\\\[([^\]]+)\\\\\]/g);
+        const latexInlineMatches = article.content.match(/\\\\\(([^)]+)\\\\\\)/g);
         console.log('LaTeX block matches:', latexBlockMatches);
         console.log('LaTeX inline matches:', latexInlineMatches);
       }, 500);
@@ -167,35 +167,10 @@ const ArticleDetail = () => {
     }
   }, [article?.content]);
 
-  // 渲染数学公式的函数
+  // 渲染数学公式的函数 - 已移除，现在使用MathContent组件
   const renderMathInElement = () => {
-    // 渲染行内数学公式
-    const inlineMathElements = document.querySelectorAll('.math-inline');
-    inlineMathElements.forEach((element) => {
-      try {
-        const formula = element.textContent;
-        const mathElement = document.createElement('span');
-        mathElement.innerHTML = `<span class="katex">${formula}</span>`;
-        element.innerHTML = '';
-        element.appendChild(mathElement);
-      } catch (error) {
-        console.error('Error rendering inline math:', error);
-      }
-    });
-    
-    // 渲染块级数学公式
-    const blockMathElements = document.querySelectorAll('.math-block');
-    blockMathElements.forEach((element) => {
-      try {
-        const formula = element.textContent;
-        const mathElement = document.createElement('div');
-        mathElement.innerHTML = `<div class="katex-display">${formula}</div>`;
-        element.innerHTML = '';
-        element.appendChild(mathElement);
-      } catch (error) {
-        console.error('Error rendering block math:', error);
-      }
-    });
+    // 这个函数现在不再需要，因为MathContent组件已经处理了数学公式渲染
+    console.log('renderMathInElement called - now handled by MathContent component');
   };
 
   if (!article) {
