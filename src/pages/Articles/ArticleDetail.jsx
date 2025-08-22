@@ -108,7 +108,7 @@ const ArticleDetail = () => {
     });
     
     // 处理LaTeX行内数学公式 \\(...\\)
-    const inlineMathRegex = /\\\\\(([^)]+)\\\\\\)/g;
+    const inlineMathRegex = new RegExp('\\\\\\\\\\(([^)]+)\\\\\\\\\\)', 'g');
     processedContent = processedContent.replace(inlineMathRegex, (match, formula) => {
       return `__INLINE_MATH__${formula}__INLINE_MATH__`;
     });
@@ -157,7 +157,7 @@ const ArticleDetail = () => {
         // 调试：检查数学公式匹配情况
         console.log('Article content length:', article.content.length);
         const blockMathRegex = /\\\\\[([^\]]+)\\\\\]/g;
-        const inlineMathRegex = /\\\\\(([^)]+)\\\\\\)/g;
+        const inlineMathRegex = new RegExp('\\\\\\\\\\(([^)]+)\\\\\\\\\\)', 'g');
         const latexBlockMatches = article.content.match(blockMathRegex);
         const latexInlineMatches = article.content.match(inlineMathRegex);
         console.log('LaTeX block matches:', latexBlockMatches);
