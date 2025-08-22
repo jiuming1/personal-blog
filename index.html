@@ -14,11 +14,19 @@
         tex: {
           inlineMath: [['\\(', '\\)']],
           displayMath: [['\\[', '\\]']],
-          processEscapes: true
+          processEscapes: true,
+          packages: ['base', 'ams', 'noerrors', 'noundefined']
         },
         chtml: {
           displayAlign: 'left',
           displayIndent: '0'
+        },
+        startup: {
+          pageReady: () => {
+            return MathJax.startup.defaultPageReady().then(() => {
+              console.log('MathJax 4.0 is ready');
+            });
+          }
         }
       };
     </script>

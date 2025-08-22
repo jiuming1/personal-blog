@@ -50,12 +50,12 @@ const MathContent = ({ content }) => {
           });
         } else {
           // 如果MathJax还未加载，稍后重试
-          setTimeout(renderMath, 500);
+          setTimeout(renderMath, 1000);
         }
       };
       
       // 延迟一点时间确保DOM已更新
-      setTimeout(renderMath, 300);
+      setTimeout(renderMath, 500);
     }
   }, [content]);
 
