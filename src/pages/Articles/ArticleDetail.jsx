@@ -89,17 +89,8 @@ const ArticleDetail = () => {
 
   // 自定义markdown渲染器，支持数学公式 - 使用MathJax
   const renderMarkdownWithMath = (content) => {
-    // 预处理数学公式，将LaTeX语法转换为MathJax语法
-    let processedContent = content;
-    
-    // 处理块级数学公式 \\[...\\] -> \[...\]
-    processedContent = processedContent.replace(/\\\\\[([^\]]+)\\\\\]/g, '\\[$1\\]');
-    
-    // 处理行内数学公式 \\(...\\) -> \(...\)
-    processedContent = processedContent.replace(new RegExp('\\\\\\\\\\(([^)]+)\\\\\\\\\\)', 'g'), '\\($1\\)');
-    
-    // 使用marked渲染markdown
-    const htmlContent = marked(processedContent);
+    // 直接使用marked渲染markdown，MathJax会自动处理反引号包围的公式
+    const htmlContent = marked(content);
     
     return htmlContent;
   };
