@@ -61,23 +61,23 @@ const MathContent = ({ content }) => {
         }
       });
       
-      // 处理行内数学公式 \\(...\\)
-      const inlineMathElements = container.querySelectorAll('p, div, span');
-      inlineMathElements.forEach((element) => {
-        const text = element.textContent;
-        const inlineMathRegex = /\\\\\(([^)]+)\\\\\\)/g;
-        if (inlineMathRegex.test(text)) {
-          const newText = text.replace(inlineMathRegex, (match, formula) => {
-            try {
-              return katex.renderToString(formula, { displayMode: false });
-            } catch (error) {
-              console.error('Error rendering inline math:', error);
-              return `<span style="color: red;">${formula}</span>`;
-            }
-          });
-          element.innerHTML = newText;
-        }
-      });
+             // 处理行内数学公式 \\(...\\)
+       const inlineMathElements = container.querySelectorAll('p, div, span');
+       inlineMathElements.forEach((element) => {
+         const text = element.textContent;
+         const inlineMathRegex = new RegExp('\\\\\\\\\\(([^)]+)\\\\\\\\\\)', 'g');
+         if (inlineMathRegex.test(text)) {
+           const newText = text.replace(inlineMathRegex, (match, formula) => {
+             try {
+               return katex.renderToString(formula, { displayMode: false });
+             } catch (error) {
+               console.error('Error rendering inline math:', error);
+               return `<span style="color: red;">${formula}</span>`;
+             }
+           });
+           element.innerHTML = newText;
+         }
+       });
     }
   }, [content]);
 
