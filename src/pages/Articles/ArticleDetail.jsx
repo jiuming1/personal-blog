@@ -26,56 +26,34 @@ import {
 import { motion } from 'framer-motion';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
-import { mathjax } from 'mathjax-full/js/mathjax.js';
-import { TeX } from 'mathjax-full/js/input/tex.js';
-import { SVG } from 'mathjax-full/js/output/svg.js';
-import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor.js';
-import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html.js';
-import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages.js';
-import { HTMLDocument } from 'mathjax-full/js/handlers/html/HTMLDocument.js';
+
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getArticleById, getAllArticles } from '../../data/articles';
 import { incrementArticleView } from '../../utils/viewCounter';
 
 /**
- * 渲染包含数学公式的内容组件 - 使用MathJax
+ * 渲染包含数学公式的内容组件 - 使用MathJax CDN
  */
 const MathContent = ({ content }) => {
   const contentRef = useRef(null);
 
   useEffect(() => {
     if (contentRef.current) {
-      try {
-        // 配置MathJax
-        const adaptor = liteAdaptor();
-        RegisterHTMLHandler(adaptor);
-        
-        const tex = new TeX({
-          packages: AllPackages,
-          inlineMath: [['\\(', '\\)']],
-          displayMath: [['\\[', '\\]']]
-        });
-        
-        const svg = new SVG({
-          fontCache: 'local'
-        });
-        
-        // 创建HTML文档
-        const html = new HTMLDocument(contentRef.current, {
-          InputJax: tex,
-          OutputJax: svg,
-          adaptor: adaptor
-        });
-        
-        // 渲染数学公式
-        html.render().then(() => {
-          console.log('MathJax rendering completed');
-        }).catch((err) => {
-          console.error('MathJax typeset error:', err);
-        });
-      } catch (error) {
-        console.error('MathJax initialization error:', error);
-      }
+      // 等待MathJax加载完成后渲染
+      const renderMath = () => {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          window.MathJax.typesetPromise([contentRef.current]).then(() => {
+            console.log('MathJax rendering completed');
+          }).catch((err) => {
+            console.error('MathJax typeset error:', err);
+          });
+        } else {
+          // 如果MathJax还未加载，稍后重试
+          setTimeout(renderMath, 100);
+        }
+      };
+      
+      renderMath();
     }
   }, [content]);
 
