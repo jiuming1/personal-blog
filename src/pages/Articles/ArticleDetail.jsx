@@ -42,32 +42,54 @@ const MathContent = ({ content }) => {
       // 等待MathJax加载完成后渲染
       const renderMath = () => {
         if (window.MathJax && window.MathJax.typesetPromise) {
-          // 清除之前的渲染
-          window.MathJax.typesetClear([contentRef.current]);
-          
-          // 使用MathJax 4.0的API
-          window.MathJax.typesetPromise([contentRef.current]).then(() => {
-            console.log('MathJax 4.0 rendering completed');
+          try {
+            // 清除之前的渲染
+            window.MathJax.typesetClear([contentRef.current]);
             
-            // 渲染完成后触发目录更新事件
+            // 使用MathJax 4.0的API进行渲染
+            window.MathJax.typesetPromise([contentRef.current]).then(() => {
+              console.log('MathJax 4.0 rendering completed successfully');
+              
+              // 渲染完成后触发目录更新事件
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('mathJaxRendered'));
+              }, 200);
+            }).catch((err) => {
+              console.error('MathJax typeset error:', err);
+              // 即使出错也触发事件，确保目录能正常工作
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('mathJaxRendered'));
+              }, 200);
+            });
+          } catch (error) {
+            console.error('MathJax rendering setup error:', error);
+            // 出错时也触发事件
             setTimeout(() => {
               window.dispatchEvent(new CustomEvent('mathJaxRendered'));
-            }, 100);
-          }).catch((err) => {
-            console.error('MathJax typeset error:', err);
-          });
+            }, 200);
+          }
         } else {
           // 如果MathJax还未加载，稍后重试
+          console.log('MathJax not ready, retrying in 1 second...');
           setTimeout(renderMath, 1000);
         }
       };
       
       // 延迟一点时间确保DOM已更新，并且目录ID设置完成
-      setTimeout(renderMath, 800);
+      setTimeout(renderMath, 1000);
     }
   }, [content]);
 
-  return <div ref={contentRef} dangerouslySetInnerHTML={{ __html: content }} />;
+  return (
+    <div 
+      ref={contentRef} 
+      dangerouslySetInnerHTML={{ __html: content }}
+      style={{
+        lineHeight: '1.8',
+        fontSize: '1.1rem'
+      }}
+    />
+  );
 };
 
 /**
@@ -127,7 +149,7 @@ const ArticleDetail = () => {
       const timer = setTimeout(() => {
         // 触发一个自定义事件，通知目录组件内容已更新
         window.dispatchEvent(new CustomEvent('articleContentUpdated'));
-      }, 500);
+      }, 800);
       
       return () => clearTimeout(timer);
     }
@@ -352,8 +374,8 @@ const ArticleDetail = () => {
                         // ID设置完成后触发目录更新事件
                         setTimeout(() => {
                           window.dispatchEvent(new CustomEvent('articleContentUpdated'));
-                        }, 200);
-                      }, 100);
+                        }, 300);
+                      }, 200);
                     }
                   }}
                   sx={{

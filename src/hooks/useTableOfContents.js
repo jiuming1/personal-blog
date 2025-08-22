@@ -267,20 +267,20 @@ const useTableOfContents = (content = '') => {
     // 延迟执行，确保marked渲染完成
     const timer = setTimeout(() => {
       generateHeadings();
-    }, 1000); // 增加延迟时间
+    }, 1200); // 增加延迟时间
 
     // 监听文章内容更新事件
     const handleContentUpdate = () => {
       setTimeout(() => {
         generateHeadings();
-      }, 1000); // 增加延迟时间
+      }, 1200); // 增加延迟时间
     };
 
     // 监听MathJax渲染完成事件
     const handleMathJaxRendered = () => {
       setTimeout(() => {
         generateHeadings();
-      }, 500); // MathJax渲染后重新生成目录
+      }, 800); // MathJax渲染后重新生成目录
     };
 
     window.addEventListener('articleContentUpdated', handleContentUpdate);
