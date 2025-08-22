@@ -26,7 +26,12 @@ import {
 import { motion } from 'framer-motion';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
-import MathJax from 'mathjax';
+import { mathjax } from 'mathjax-full/js/mathjax.js';
+import { TeX } from 'mathjax-full/js/input/tex.js';
+import { SVG } from 'mathjax-full/js/output/svg.js';
+import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor.js';
+import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html.js';
+import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages.js';
 import { ROUTES, CATEGORIES } from '../../utils/constants';
 import { getArticleById, getAllArticles } from '../../data/articles';
 import { incrementArticleView } from '../../utils/viewCounter';
@@ -39,8 +44,29 @@ const MathContent = ({ content }) => {
 
   useEffect(() => {
     if (contentRef.current) {
-      // 使用MathJax渲染数学公式
-      MathJax.typesetPromise([contentRef.current]).catch((err) => {
+      // 配置MathJax
+      const adaptor = liteAdaptor();
+      const handler = RegisterHTMLHandler(adaptor);
+      
+      const tex = new TeX({
+        packages: AllPackages,
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      });
+      
+      const svg = new SVG({
+        fontCache: 'local'
+      });
+      
+      const html = mathjax.document(contentRef.current, {
+        InputJax: tex,
+        OutputJax: svg
+      });
+      
+      // 渲染数学公式
+      html.render().then(() => {
+        console.log('MathJax rendering completed');
+      }).catch((err) => {
         console.error('MathJax typeset error:', err);
       });
     }
