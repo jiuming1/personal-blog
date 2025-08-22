@@ -174,11 +174,19 @@ const useTableOfContents = (content = '') => {
 
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const rect = entry.boundingClientRect;
-          const distance = Math.abs(rect.top);
-          if (distance < minDistance) {
-            minDistance = distance;
-            closestEntry = entry;
+          try {
+            const rect = entry.boundingClientRect;
+            const distance = Math.abs(rect.top);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestEntry = entry;
+            }
+          } catch (error) {
+            console.error('Error accessing boundingClientRect:', error);
+            // 如果boundingClientRect不可用，使用备用方法
+            if (entry.target && entry.target.id) {
+              closestEntry = entry;
+            }
           }
         }
       });
@@ -296,11 +304,15 @@ const useTableOfContents = (content = '') => {
         headings.forEach((heading) => {
           const element = document.getElementById(heading.id);
           if (element) {
-            const rect = element.getBoundingClientRect();
-            const distance = Math.abs(rect.top);
-            if (distance < minDistance) {
-              minDistance = distance;
-              closestHeading = heading;
+            try {
+              const rect = element.getBoundingClientRect();
+              const distance = Math.abs(rect.top);
+              if (distance < minDistance) {
+                minDistance = distance;
+                closestHeading = heading;
+              }
+            } catch (error) {
+              console.error('Error accessing getBoundingClientRect:', error);
             }
           }
         });
