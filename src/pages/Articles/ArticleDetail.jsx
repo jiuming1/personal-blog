@@ -32,7 +32,7 @@ import { getArticleById, getAllArticles } from '../../data/articles';
 import { incrementArticleView } from '../../utils/viewCounter';
 
 /**
- * 渲染包含数学公式的内容组件 - 使用MathJax 3.x CDN
+ * 渲染包含数学公式的内容组件 - 使用MathJax 4.0
  */
 const MathContent = ({ content }) => {
   const contentRef = useRef(null);
@@ -42,20 +42,20 @@ const MathContent = ({ content }) => {
       // 等待MathJax加载完成后渲染
       const renderMath = () => {
         if (window.MathJax && window.MathJax.typesetPromise) {
-          // 使用MathJax 3.x的API
+          // 使用MathJax 4.0的API
           window.MathJax.typesetPromise([contentRef.current]).then(() => {
-            console.log('MathJax rendering completed');
+            console.log('MathJax 4.0 rendering completed');
           }).catch((err) => {
             console.error('MathJax typeset error:', err);
           });
         } else {
           // 如果MathJax还未加载，稍后重试
-          setTimeout(renderMath, 300);
+          setTimeout(renderMath, 500);
         }
       };
       
       // 延迟一点时间确保DOM已更新
-      setTimeout(renderMath, 200);
+      setTimeout(renderMath, 300);
     }
   }, [content]);
 
