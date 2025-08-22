@@ -901,15 +901,15 @@ OpenFOAM官网文档、CentOS官方包管理指南。
 
 感知机的数学表达式为：
 
-\\[ f(x) = \\begin{cases}
-1 & \\text{if } \\sum_{i=1}^{n} w_i x_i + b > 0 \\\\
-0 & \\text{otherwise}
-\\end{cases} \\]
+\[ f(x) = \begin{cases}
+1 & \text{if } \sum_{i=1}^{n} w_i x_i + b > 0 \\
+0 & \text{otherwise}
+\end{cases} \]
 
 其中：
-- \\(x_i\\) 为输入特征
-- \\(w_i\\) 为权重参数
-- \\(b\\) 为偏置项
+- \(x_i\) 为输入特征
+- \(w_i\) 为权重参数
+- \(b\) 为偏置项
 
 ### 学习算法
 
@@ -917,9 +917,9 @@ OpenFOAM官网文档、CentOS官方包管理指南。
 
 1. 初始化权重和偏置
 2. 对于每个训练样本：
-   - 计算输出：\\(y = f(\\sum_{i=1}^{n} w_i x_i + b)\\)
-   - 更新权重：\\(w_i := w_i + \\alpha(y_{true} - y)x_i\\)
-   - 更新偏置：\\(b := b + \\alpha(y_{true} - y)\\)
+   - 计算输出：\(y = f(\sum_{i=1}^{n} w_i x_i + b)\)
+   - 更新权重：\(w_i := w_i + \alpha(y_{true} - y)x_i\)
+   - 更新偏置：\(b := b + \alpha(y_{true} - y)\)
 
 ## 激活函数
 
@@ -927,12 +927,12 @@ OpenFOAM官网文档、CentOS官方包管理指南。
 
 激活函数为神经网络引入非线性，使其能够学习复杂的模式：
 
-\\[ y = f(\\sum_{i=1}^{n} w_i x_i + b) \\]
+\[ y = f(\sum_{i=1}^{n} w_i x_i + b) \]
 
 ### 常用激活函数
 
 **1. Sigmoid函数：**
-\\[ \\sigma(x) = \\frac{1}{1 + e^{-x}} \\]
+\[ \sigma(x) = \frac{1}{1 + e^{-x}} \]
 
 **特点：**
 - 输出范围：[0, 1]
@@ -940,7 +940,7 @@ OpenFOAM官网文档、CentOS官方包管理指南。
 - 存在梯度消失问题
 
 **2. ReLU函数：**
-\\[ \\text{ReLU}(x) = \\max(0, x) \\]
+\[ \text{ReLU}(x) = \max(0, x) \]
 
 **特点：**
 - 计算简单
@@ -948,7 +948,7 @@ OpenFOAM官网文档、CentOS官方包管理指南。
 - 存在死亡ReLU问题
 
 **3. Tanh函数：**
-\\[ \\tanh(x) = \\frac{e^x - e^{-x}}{e^x + e^{-x}} \\]
+\[ \tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}} \]
 
 **特点：**
 - 输出范围：[-1, 1]
@@ -961,26 +961,26 @@ OpenFOAM官网文档、CentOS官方包管理指南。
 
 单层神经网络的前向传播过程：
 
-\\[ z = Wx + b \\]
-\\[ a = f(z) \\]
+\[ z = Wx + b \]
+\[ a = f(z) \]
 
 其中：
-- \\(W\\) 为权重矩阵
-- \\(x\\) 为输入向量
-- \\(b\\) 为偏置向量
-- \\(f\\) 为激活函数
+- \(W\) 为权重矩阵
+- \(x\) 为输入向量
+- \(b\) 为偏置向量
+- \(f\) 为激活函数
 
 ### 多层神经网络
 
 多层神经网络的前向传播：
 
-对于第\\(l\\)层：
-\\[ z^{[l]} = W^{[l]}a^{[l-1]} + b^{[l]} \\]
-\\[ a^{[l]} = f^{[l]}(z^{[l]}) \\]
+对于第\(l\)层：
+\[ z^{[l]} = W^{[l]}a^{[l-1]} + b^{[l]} \]
+\[ a^{[l]} = f^{[l]}(z^{[l]}) \]
 
 其中：
-- \\(a^{[0]} = x\\)（输入层）
-- \\(a^{[L]} = \\hat{y}\\)（输出层）
+- \(a^{[0]} = x\)（输入层）
+- \(a^{[L]} = \hat{y}\)（输出层）
 
 ## 反向传播
 
@@ -989,47 +989,47 @@ OpenFOAM官网文档、CentOS官方包管理指南。
 常用的损失函数：
 
 **均方误差（MSE）：**
-\\[ L = \\frac{1}{m}\\sum_{i=1}^{m}(y_i - \\hat{y}_i)^2 \\]
+\[ L = \frac{1}{m}\sum_{i=1}^{m}(y_i - \hat{y}_i)^2 \]
 
 **交叉熵损失：**
-\\[ L = -\\frac{1}{m}\\sum_{i=1}^{m}[y_i \\log(\\hat{y}_i) + (1-y_i)\\log(1-\\hat{y}_i)] \\]
+\[ L = -\frac{1}{m}\sum_{i=1}^{m}[y_i \log(\hat{y}_i) + (1-y_i)\log(1-\hat{y}_i)] \]
 
 ### 梯度计算
 
 **输出层梯度：**
-\\[ \\frac{\\partial L}{\\partial W^{[l]}} = \\frac{\\partial L}{\\partial z^{[l]}} \\cdot (a^{[l-1]})^T \\]
-\\[ \\frac{\\partial L}{\\partial b^{[l]}} = \\sum_{i=1}^{m} \\frac{\\partial L}{\\partial z_i^{[l]}} \\]
+\[ \frac{\partial L}{\partial W^{[l]}} = \frac{\partial L}{\partial z^{[l]}} \cdot (a^{[l-1]})^T \]
+\[ \frac{\partial L}{\partial b^{[l]}} = \sum_{i=1}^{m} \frac{\partial L}{\partial z_i^{[l]}} \]
 
 **隐藏层梯度：**
-\\[ \\frac{\\partial L}{\\partial z^{[l]}} = \\frac{\\partial L}{\\partial a^{[l]}} \\cdot f'(z^{[l]}) \\]
+\[ \frac{\partial L}{\partial z^{[l]}} = \frac{\partial L}{\partial a^{[l]}} \cdot f'(z^{[l]}) \]
 
 ### 参数更新
 
 使用梯度下降更新参数：
 
-\\[ W := W - \\alpha \\frac{\\partial L}{\\partial W} \\]
-\\[ b := b - \\alpha \\frac{\\partial L}{\\partial b} \\]
+\[ W := W - \alpha \frac{\partial L}{\partial W} \]
+\[ b := b - \alpha \frac{\partial L}{\partial b} \]
 
-其中\\(\\alpha\\)为学习率。
+其中\(\alpha\)为学习率。
 
 ## 优化算法
 
 ### 随机梯度下降（SGD）
 
 **动量法：**
-\\[ v := \\beta v + (1-\\beta)\\frac{\\partial L}{\\partial W} \\]
-\\[ W := W - \\alpha v \\]
+\[ v := \beta v + (1-\beta)\frac{\partial L}{\partial W} \]
+\[ W := W - \alpha v \]
 
-其中\\(\\beta\\)为动量系数。
+其中\(\beta\)为动量系数。
 
 ### Adam优化器
 
 Adam结合了动量和自适应学习率：
 
-1. 计算一阶矩估计：\\(m_t = \\beta_1 m_{t-1} + (1-\\beta_1)g_t\\)
-2. 计算二阶矩估计：\\(v_t = \\beta_2 v_{t-1} + (1-\\beta_2)g_t^2\\)
-3. 偏差修正：\\(\\hat{m}_t = \\frac{m_t}{1-\\beta_1^t}\\), \\(\\hat{v}_t = \\frac{v_t}{1-\\beta_2^t}\\)
-4. 参数更新：\\(\\theta_t = \\theta_{t-1} - \\frac{\\alpha}{\\sqrt{\\hat{v}_t} + \\epsilon}\\hat{m}_t\\)
+1. 计算一阶矩估计：\(m_t = \beta_1 m_{t-1} + (1-\beta_1)g_t\)
+2. 计算二阶矩估计：\(v_t = \beta_2 v_{t-1} + (1-\beta_2)g_t^2\)
+3. 偏差修正：\(\hat{m}_t = \frac{m_t}{1-\beta_1^t}\), \(\hat{v}_t = \frac{v_t}{1-\beta_2^t}\)
+4. 参数更新：\(\theta_t = \theta_{t-1} - \frac{\alpha}{\sqrt{\hat{v}_t} + \epsilon}\hat{m}_t\)
 
 ## 正则化
 
@@ -1037,31 +1037,31 @@ Adam结合了动量和自适应学习率：
 
 L2正则化通过添加权重惩罚项防止过拟合：
 
-\\[ L_{reg} = L + \\frac{\\lambda}{2m}\\sum_{w} w^2 \\]
+\[ L_{reg} = L + \frac{\lambda}{2m}\sum_{w} w^2 \]
 
 ### L1正则化
 
 L1正则化促进稀疏解：
 
-\\[ L_{reg} = L + \\frac{\\lambda}{m}\\sum_{w} |w| \\]
+\[ L_{reg} = L + \frac{\lambda}{m}\sum_{w} |w| \]
 
 ### Dropout
 
 Dropout通过随机丢弃神经元防止过拟合：
 
-\\[ a_{dropout} = a \\odot mask \\]
+\[ a_{dropout} = a \odot mask \]
 
-其中\\(mask\\)为随机二进制掩码。
+其中\(mask\)为随机二进制掩码。
 
 ## 实践应用
 
 ### 数据预处理
 
 **标准化：**
-\\[ x_{norm} = \\frac{x - \\mu}{\\sigma} \\]
+\[ x_{norm} = \frac{x - \mu}{\sigma} \]
 
 **归一化：**
-\\[ x_{norm} = \\frac{x - x_{min}}{x_{max} - x_{min}} \\]
+\[ x_{norm} = \frac{x - x_{min}}{x_{max} - x_{min}} \]
 
 ### 模型评估
 
@@ -1114,15 +1114,15 @@ Dropout通过随机丢弃神经元防止过拟合：
 卷积是CNN的核心操作，通过滑动窗口提取局部特征：
 
 **数学定义：**
-\\[ (f * k)(p) = \\sum_{s+t=p} f(s) \\cdot k(t) \\]
+\[ (f * k)(p) = \sum_{s+t=p} f(s) \cdot k(t) \]
 
 **图像卷积：**
-\\[ (I * K)(i,j) = \\sum_{m} \\sum_{n} I(i+m, j+n) \\cdot K(m,n) \\]
+\[ (I * K)(i,j) = \sum_{m} \sum_{n} I(i+m, j+n) \cdot K(m,n) \]
 
 其中：
-- \\(I\\) 为输入图像
-- \\(K\\) 为卷积核
-- \\(i,j\\) 为输出位置
+- \(I\) 为输入图像
+- \(K\) 为卷积核
+- \(i,j\) 为输出位置
 
 ### 卷积层的作用
 
@@ -1136,7 +1136,7 @@ Dropout通过随机丢弃神经元防止过拟合：
 
 最大池化选择局部区域的最大值：
 
-\\[ \\text{MaxPool}(x) = \\max_{i \\in R} x_i \\]
+\[ \text{MaxPool}(x) = \max_{i \in R} x_i \]
 
 **特点：**
 - 保留主要特征
@@ -1147,13 +1147,13 @@ Dropout通过随机丢弃神经元防止过拟合：
 
 平均池化计算局部区域的平均值：
 
-\\[ \\text{AvgPool}(x) = \\frac{1}{|R|} \\sum_{i \\in R} x_i \\]
+\[ \text{AvgPool}(x) = \frac{1}{|R|} \sum_{i \in R} x_i \]
 
 ### 全局平均池化
 
 全局平均池化对整个特征图进行池化：
 
-\\[ \\text{GAP}(x) = \\frac{1}{H \\times W} \\sum_{i=1}^{H} \\sum_{j=1}^{W} x_{i,j} \\]
+\[ \text{GAP}(x) = \frac{1}{H \times W} \sum_{i=1}^{H} \sum_{j=1}^{W} x_{i,j} \]
 
 ## CNN的经典架构
 
@@ -1199,8 +1199,8 @@ VGGNet提出了使用小卷积核的深度网络架构：
 ResNet通过残差连接解决了深度网络的梯度消失问题：
 
 **残差块：**
-\\[ F(x) = H(x) - x \\]
-\\[ H(x) = F(x) + x \\]
+\[ F(x) = H(x) - x \]
+\[ H(x) = F(x) + x \]
 
 ## 现代CNN架构
 
@@ -1227,8 +1227,8 @@ ResNet通过残差连接解决了深度网络的梯度消失问题：
 2. **点卷积**：1×1卷积进行通道组合
 
 **计算复杂度：**
-- 标准卷积：\\(O(C_{in} \\times C_{out} \\times K \\times K \\times H \\times W)\\)
-- 深度可分离卷积：\\(O(C_{in} \\times K \\times K \\times H \\times W + C_{in} \\times C_{out} \\times H \\times W)\\)
+- 标准卷积：\(O(C_{in} \times C_{out} \times K \times K \times H \times W)\)
+- 深度可分离卷积：\(O(C_{in} \times K \times K \times H \times W + C_{in} \times C_{out} \times H \times W)\)
 
 ## 计算机视觉任务
 
