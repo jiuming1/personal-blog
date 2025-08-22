@@ -15,17 +15,39 @@
           inlineMath: [['\\(', '\\)']],
           displayMath: [['\\[', '\\]']],
           processEscapes: true,
-          packages: ['base', 'ams', 'noerrors', 'noundefined']
+          packages: ['base', 'ams', 'noerrors', 'noundefined'],
+          macros: {
+            RR: "\\mathbb{R}",
+            NN: "\\mathbb{N}",
+            ZZ: "\\mathbb{Z}",
+            QQ: "\\mathbb{Q}",
+            CC: "\\mathbb{C}"
+          }
         },
         chtml: {
           displayAlign: 'left',
-          displayIndent: '0'
+          displayIndent: '0',
+          scale: 1,
+          minScale: 0.5,
+          maxScale: 2
         },
         startup: {
           pageReady: () => {
             return MathJax.startup.defaultPageReady().then(() => {
               console.log('MathJax 4.0 is ready');
             });
+          },
+          typeset: false
+        },
+        options: {
+          enableMenu: false,
+          menuOptions: {
+            settings: {
+              texHints: true,
+              semantics: false,
+              zoom: 'NoZoom',
+              zscale: '200%'
+            }
           }
         }
       };

@@ -42,9 +42,17 @@ const MathContent = ({ content }) => {
       // 等待MathJax加载完成后渲染
       const renderMath = () => {
         if (window.MathJax && window.MathJax.typesetPromise) {
+          // 清除之前的渲染
+          window.MathJax.typesetClear([contentRef.current]);
+          
           // 使用MathJax 4.0的API
           window.MathJax.typesetPromise([contentRef.current]).then(() => {
             console.log('MathJax 4.0 rendering completed');
+            
+            // 渲染完成后触发目录更新事件
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('mathJaxRendered'));
+            }, 100);
           }).catch((err) => {
             console.error('MathJax typeset error:', err);
           });
@@ -54,8 +62,8 @@ const MathContent = ({ content }) => {
         }
       };
       
-      // 延迟一点时间确保DOM已更新
-      setTimeout(renderMath, 500);
+      // 延迟一点时间确保DOM已更新，并且目录ID设置完成
+      setTimeout(renderMath, 800);
     }
   }, [content]);
 
@@ -340,6 +348,11 @@ const ArticleDetail = () => {
                           heading.id = `heading-${index}`;
                           console.log(`ArticleDetail: Set ID for "${heading.textContent.trim()}": heading-${index}`);
                         });
+                        
+                        // ID设置完成后触发目录更新事件
+                        setTimeout(() => {
+                          window.dispatchEvent(new CustomEvent('articleContentUpdated'));
+                        }, 200);
                       }, 100);
                     }
                   }}

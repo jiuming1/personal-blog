@@ -276,11 +276,20 @@ const useTableOfContents = (content = '') => {
       }, 1000); // 增加延迟时间
     };
 
+    // 监听MathJax渲染完成事件
+    const handleMathJaxRendered = () => {
+      setTimeout(() => {
+        generateHeadings();
+      }, 500); // MathJax渲染后重新生成目录
+    };
+
     window.addEventListener('articleContentUpdated', handleContentUpdate);
+    window.addEventListener('mathJaxRendered', handleMathJaxRendered);
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener('articleContentUpdated', handleContentUpdate);
+      window.removeEventListener('mathJaxRendered', handleMathJaxRendered);
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
