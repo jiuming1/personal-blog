@@ -174,7 +174,7 @@ const useTableOfContents = (content = '') => {
 
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const rect = entry.boundingClientRect();
+          const rect = entry.boundingClientRect;
           const distance = Math.abs(rect.top);
           if (distance < minDistance) {
             minDistance = distance;
