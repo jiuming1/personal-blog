@@ -11,6 +11,7 @@ const useTableOfContents = (content = '') => {
   const observerRef = useRef(null);
   const contentRef = useRef(null);
   const activeIdRef = useRef(activeId); // 添加activeId的ref
+  const isScrollingToHeadingRef = useRef(false); // 添加标志防止滚动监听器干扰
 
   /**
    * 生成标题的唯一ID - 使用简单的索引ID
@@ -191,6 +192,9 @@ const useTableOfContents = (content = '') => {
    * 点击目录项跳转到对应位置
    */
   const scrollToHeading = useCallback((headingId) => {
+    // 设置滚动标志，防止滚动监听器干扰
+    isScrollingToHeadingRef.current = true;
+    
     // 立即设置激活状态，提供即时反馈
     setActiveId(headingId);
     
@@ -216,23 +220,21 @@ const useTableOfContents = (content = '') => {
       }
       
       if (element) {
-        // 使用scrollIntoView方法，确保滚动到正确的标题位置
-        element.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start', // 改为start，确保滚动到目标标题的顶部
-          inline: 'nearest'
+        // 计算目标滚动位置，确保标题在视口顶部
+        const rect = element.getBoundingClientRect();
+        const currentScrollTop = window.pageYOffset;
+        const targetScrollTop = currentScrollTop + rect.top - 80; // 80px为顶部导航栏高度
+        
+        // 使用window.scrollTo进行精确滚动
+        window.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth'
         });
         
-        // 添加额外的滚动调整，确保标题完全可见
+        // 滚动完成后清除标志
         setTimeout(() => {
-          const rect = element.getBoundingClientRect();
-          if (rect.top < 80) { // 如果标题被顶部导航栏遮挡
-            window.scrollBy({
-              top: rect.top - 80,
-              behavior: 'smooth'
-            });
-          }
-        }, 100);
+          isScrollingToHeadingRef.current = false;
+        }, 1000); // 给滚动动画足够时间完成
         
         // 添加高亮效果
         element.style.transition = 'background-color 0.2s ease';
@@ -313,6 +315,11 @@ const useTableOfContents = (content = '') => {
       
       // 添加手动滚动监听作为备用方案
       const handleScroll = () => {
+        // 如果正在执行点击滚动，跳过手动滚动处理
+        if (isScrollingToHeadingRef.current) {
+          return;
+        }
+        
         let closestHeading = null;
         let minDistance = Infinity;
         
