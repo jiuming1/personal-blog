@@ -26,31 +26,31 @@ const useTableOfContents = (content = '') => {
    */
   const generateHeadings = useCallback(() => {
     const findAndProcessHeadings = () => {
+      // 使用更可靠的DOM查询方式
       const contentElement = document.querySelector('[data-content="article"]');
       if (!contentElement) {
         return false;
       }
 
-      const headingElements = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      // 确保内容元素已经完全渲染
+      const headingElements = Array.from(contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6'));
       if (headingElements.length === 0) {
         return false;
       }
 
       const headingsList = [];
 
-      // 使用已经设置的ID
+      // 处理所有标题元素
       headingElements.forEach((element, index) => {
         const text = element.textContent.trim();
+        if (!text) return; // 跳过空标题
+        
         const level = parseInt(element.tagName.charAt(1));
         
-        // 使用已经设置的ID，如果没有则生成
-        const finalId = element.id || `heading-${index}`;
-        
         // 确保ID设置成功
-        if (!element.id) {
-          element.id = finalId;
-          element.setAttribute('id', finalId);
-        }
+        const finalId = `heading-${index}`;
+        element.id = finalId;
+        element.setAttribute('id', finalId);
 
         headingsList.push({
           id: finalId,
@@ -60,22 +60,24 @@ const useTableOfContents = (content = '') => {
         });
       });
 
-      // 验证所有标题都被正确处理
+      // 确保最后一个标题被正确处理
       if (headingsList.length > 0) {
-        console.log('useTableOfContents: Generated headings:', headingsList.length);
-        console.log('useTableOfContents: Headings:', headingsList.map(h => ({ id: h.id, text: h.text })));
-        
-        // 验证最后一个标题是否有ID
-        const lastHeading = headingsList[headingsList.length - 1];
-        if (lastHeading && lastHeading.element) {
-          console.log('useTableOfContents: Last heading ID check:', {
-            id: lastHeading.id,
-            elementId: lastHeading.element.id,
-            text: lastHeading.text
-          });
+        const lastIndex = headingsList.length - 1;
+        const lastElement = headingElements[lastIndex];
+        if (lastElement && lastElement.textContent.trim()) {
+          const lastId = `heading-${lastIndex}`;
+          lastElement.id = lastId;
+          lastElement.setAttribute('id', lastId);
+          
+          // 更新最后一个标题的ID
+          headingsList[lastIndex].id = lastId;
         }
-        
-        setHeadings(headingsList);
+      }
+
+      // 设置标题列表
+      if (headingsList.length > 0) {
+        // 强制重新渲染，确保所有标题都被显示
+        setHeadings([...headingsList]);
         return true;
       }
       
@@ -116,29 +118,15 @@ const useTableOfContents = (content = '') => {
       subtree: true,
     });
 
-    // 立即尝试一次
-    setTimeout(() => {
-      if (findAndProcessHeadings()) {
-        observer.disconnect();
-      }
-    }, 800); // 增加延迟时间
-
-    // 再次尝试，确保所有标题都被处理
-    setTimeout(() => {
-      if (!findAndProcessHeadings()) {
-        findAndProcessHeadings();
-      }
-    }, 2000); // 增加延迟时间
-
-    // 第三次尝试，确保最后一个标题也被处理
-    setTimeout(() => {
-      findAndProcessHeadings();
-    }, 3000); // 增加延迟时间
-
-    // 第四次尝试，确保最后一个标题也被处理
-    setTimeout(() => {
-      findAndProcessHeadings();
-    }, 4000); // 增加延迟时间
+    // 多次尝试确保所有标题都被处理
+    const attempts = [800, 1500, 2500, 3500];
+    attempts.forEach((delay, index) => {
+      setTimeout(() => {
+        if (findAndProcessHeadings()) {
+          observer.disconnect();
+        }
+      }, delay);
+    });
 
     // 设置超时
     setTimeout(() => {
@@ -299,12 +287,7 @@ const useTableOfContents = (content = '') => {
     const handleContentUpdate = () => {
       setTimeout(() => {
         generateHeadings();
-      }, 1500); // 增加延迟时间
-      
-      // 额外重试，确保最后一个标题也被处理
-      setTimeout(() => {
-        generateHeadings();
-      }, 2500); // 再次重试
+      }, 1000);
     };
 
     // 监听MathJax渲染完成事件
