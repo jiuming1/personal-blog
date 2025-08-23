@@ -37,17 +37,19 @@ const useTableOfContents = (content = '') => {
 
       const headingsList = [];
 
-      // 先设置所有ID
+      // 使用已经设置的ID
       headingElements.forEach((element, index) => {
         const text = element.textContent.trim();
         const level = parseInt(element.tagName.charAt(1));
         
-        // 生成唯一ID
-        const finalId = `heading-${index}`;
+        // 使用已经设置的ID，如果没有则生成
+        const finalId = element.id || `heading-${index}`;
         
         // 确保ID设置成功
-        element.id = finalId;
-        element.setAttribute('id', finalId);
+        if (!element.id) {
+          element.id = finalId;
+          element.setAttribute('id', finalId);
+        }
 
         headingsList.push({
           id: finalId,
@@ -59,7 +61,8 @@ const useTableOfContents = (content = '') => {
 
       // 验证所有标题都被正确处理
       if (headingsList.length > 0) {
-        console.log('Generated headings:', headingsList.length);
+        console.log('useTableOfContents: Generated headings:', headingsList.length);
+        console.log('useTableOfContents: Headings:', headingsList.map(h => ({ id: h.id, text: h.text })));
         setHeadings(headingsList);
         return true;
       }
@@ -106,14 +109,19 @@ const useTableOfContents = (content = '') => {
       if (findAndProcessHeadings()) {
         observer.disconnect();
       }
-    }, 300);
+    }, 500);
 
     // 再次尝试，确保所有标题都被处理
     setTimeout(() => {
       if (!findAndProcessHeadings()) {
         findAndProcessHeadings();
       }
-    }, 1000);
+    }, 1500);
+
+    // 第三次尝试，确保最后一个标题也被处理
+    setTimeout(() => {
+      findAndProcessHeadings();
+    }, 2000);
 
     // 设置超时
     setTimeout(() => {

@@ -450,8 +450,10 @@ const ArticleDetail = () => {
                       // 在DOM元素挂载后立即设置ID
                       setTimeout(() => {
                         const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                        console.log('ArticleDetail: Found headings:', headings.length);
                         headings.forEach((heading, index) => {
                           heading.id = `heading-${index}`;
+                          console.log(`ArticleDetail: Set ID for "${heading.textContent.trim()}": heading-${index}`);
                         });
                         
                         // ID设置完成后触发目录更新事件
