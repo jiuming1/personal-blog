@@ -26,17 +26,13 @@ const useTableOfContents = (content = '') => {
     const findAndProcessHeadings = () => {
       const contentElement = document.querySelector('[data-content="article"]');
       if (!contentElement) {
-        console.log('Content element not found');
         return false;
       }
 
       const headingElements = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
       if (headingElements.length === 0) {
-        console.log('No heading elements found');
         return false;
       }
-
-      console.log('Found heading elements:', headingElements.length);
 
       const headingsList = [];
 
@@ -52,7 +48,6 @@ const useTableOfContents = (content = '') => {
         try {
           element.id = finalId;
           element.setAttribute('id', finalId);
-          console.log(`Setting ID for "${text}": ${finalId}`);
         } catch (error) {
           console.error('Error setting ID:', error);
         }
@@ -68,35 +63,26 @@ const useTableOfContents = (content = '') => {
       // 验证ID设置是否成功
       const allElements = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
       const elementsWithIds = Array.from(allElements).map(el => ({ id: el.id, text: el.textContent.trim() }));
-      console.log('Elements after ID setting:', elementsWithIds);
 
       // 检查是否有空的ID
       const emptyIds = elementsWithIds.filter(el => !el.id);
       if (emptyIds.length > 0) {
-        console.warn('Found elements with empty IDs:', emptyIds);
         return false;
       }
-
-      console.log('Generated headings:', headingsList.map(h => ({ text: h.text, id: h.id })));
       
       // 验证所有ID都能被找到
       let allFound = true;
       headingsList.forEach((heading) => {
         const element = document.getElementById(heading.id);
         if (!element) {
-          console.error('Element not found for ID:', heading.id);
           allFound = false;
-        } else {
-          console.log('Element found for ID:', heading.id, element.textContent.trim());
         }
       });
       
       if (allFound) {
-        console.log('All elements found successfully!');
         setHeadings(headingsList);
         return true;
       } else {
-        console.warn('Some elements not found, will retry...');
         return false;
       }
     };
@@ -160,8 +146,6 @@ const useTableOfContents = (content = '') => {
 
     if (headings.length === 0) return;
 
-    console.log('Setting up Intersection Observer for', headings.length, 'headings');
-
     const options = {
       rootMargin: '-10% 0px -60% 0px', // 调整rootMargin，使高亮更敏感
       threshold: [0, 0.25, 0.5, 0.75, 1], // 添加多个阈值
@@ -192,7 +176,6 @@ const useTableOfContents = (content = '') => {
       });
 
       if (closestEntry) {
-        console.log('Setting active ID to:', closestEntry.target.id, 'distance:', minDistance);
         setActiveId(closestEntry.target.id);
       }
     }, options);
@@ -204,9 +187,6 @@ const useTableOfContents = (content = '') => {
         const element = document.getElementById(heading.id);
         if (element) {
           observerRef.current.observe(element);
-          console.log('Observing element:', heading.id);
-        } else {
-          console.warn('Element not found for heading:', heading.id);
         }
       });
     }, 200);
@@ -216,14 +196,10 @@ const useTableOfContents = (content = '') => {
    * 点击目录项跳转到对应位置
    */
   const scrollToHeading = useCallback((headingId) => {
-    console.log('scrollToHeading called with:', headingId);
-    
     // 查找元素
     const element = document.getElementById(headingId);
     
     if (element) {
-      console.log('Element found, scrolling to:', element.textContent);
-      
       // 使用scrollIntoView方法
       element.scrollIntoView({
         behavior: 'smooth',
@@ -240,16 +216,6 @@ const useTableOfContents = (content = '') => {
       setTimeout(() => {
         element.style.backgroundColor = '';
       }, 2000);
-      
-    } else {
-      console.log('Element not found for id:', headingId);
-      
-      // 尝试在文章内容区域查找
-      const contentElement = document.querySelector('[data-content="article"]');
-      if (contentElement) {
-        const allElements = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        console.log('All elements in content:', Array.from(allElements).map(el => ({ id: el.id, text: el.textContent.trim() })));
-      }
     }
   }, [headings]);
 
@@ -301,12 +267,10 @@ const useTableOfContents = (content = '') => {
    */
   useEffect(() => {
     if (headings.length > 0) {
-      console.log('Headings updated, setting up observer for', headings.length, 'headings');
       setupIntersectionObserver();
       
       // 添加手动滚动监听作为备用方案
       const handleScroll = () => {
-        const scrollTop = window.pageYOffset;
         let closestHeading = null;
         let minDistance = Infinity;
         
@@ -327,7 +291,6 @@ const useTableOfContents = (content = '') => {
         });
         
         if (closestHeading && closestHeading.id !== activeId) {
-          console.log('Scroll: Setting active ID to:', closestHeading.id);
           setActiveId(closestHeading.id);
         }
       };

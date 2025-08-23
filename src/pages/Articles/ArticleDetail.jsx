@@ -132,24 +132,24 @@ const ArticleDetail = () => {
     return htmlContent;
   };
 
-  // 检查MathJax状态
+  // 检查MathJax状态（仅在开发环境）
   useEffect(() => {
-    const checkMathJaxStatus = () => {
-      if (window.MathJax) {
-        console.log('MathJax status:', {
-          version: window.MathJax.version,
-          startup: window.MathJax.startup,
-          typesetPromise: !!window.MathJax.typesetPromise,
-          typesetClear: !!window.MathJax.typesetClear
-        });
-      } else {
-        console.log('MathJax not loaded yet');
-      }
-    };
+    if (process.env.NODE_ENV === 'development') {
+      const checkMathJaxStatus = () => {
+        if (window.MathJax) {
+          console.log('MathJax status:', {
+            version: window.MathJax.version,
+            startup: window.MathJax.startup,
+            typesetPromise: !!window.MathJax.typesetPromise,
+            typesetClear: !!window.MathJax.typesetClear
+          });
+        }
+      };
 
-    // 延迟检查，确保MathJax有时间加载
-    const timer = setTimeout(checkMathJaxStatus, 2000);
-    return () => clearTimeout(timer);
+      // 延迟检查，确保MathJax有时间加载
+      const timer = setTimeout(checkMathJaxStatus, 2000);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   useEffect(() => {
@@ -395,7 +395,6 @@ const ArticleDetail = () => {
                         const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
                         headings.forEach((heading, index) => {
                           heading.id = `heading-${index}`;
-                          console.log(`ArticleDetail: Set ID for "${heading.textContent.trim()}": heading-${index}`);
                         });
                         
                         // ID设置完成后触发目录更新事件
