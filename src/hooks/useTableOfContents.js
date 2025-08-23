@@ -10,6 +10,7 @@ const useTableOfContents = (content = '') => {
   const [activeId, setActiveId] = useState('');
   const observerRef = useRef(null);
   const contentRef = useRef(null);
+  const activeIdRef = useRef(activeId); // 添加activeId的ref
 
   /**
    * 生成标题的唯一ID - 使用简单的索引ID
@@ -290,7 +291,7 @@ const useTableOfContents = (content = '') => {
           }
         });
         
-        if (closestHeading && closestHeading.id !== activeId) {
+        if (closestHeading && closestHeading.id !== activeIdRef.current) {
           setActiveId(closestHeading.id);
         }
       };
@@ -310,7 +311,12 @@ const useTableOfContents = (content = '') => {
         observerRef.current.disconnect();
       }
     };
-  }, [headings, setupIntersectionObserver, activeId]);
+  }, [headings, setupIntersectionObserver]); // 移除activeId依赖
+
+  // 更新activeIdRef
+  useEffect(() => {
+    activeIdRef.current = activeId;
+  }, [activeId]);
 
   return {
     headings,

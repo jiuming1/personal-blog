@@ -21,9 +21,6 @@ import { motion } from 'framer-motion';
 const TableOfContents = ({ headings, activeId, onHeadingClick }) => {
   const theme = useTheme();
 
-  // 调试信息
-  console.log('TableOfContents render:', { headings: headings.length, activeId });
-
   if (!headings || headings.length === 0) {
     return null;
   }
