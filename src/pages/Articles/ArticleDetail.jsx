@@ -36,10 +36,12 @@ import { incrementArticleView } from '../../utils/viewCounter';
  */
 const MathContent = ({ content }) => {
   const contentRef = useRef(null);
+  const retryCountRef = useRef(0);
+  const maxRetries = 10; // 最大重试次数
 
   useEffect(() => {
     if (contentRef.current) {
-      // 等待MathJax加载完成后渲染
+      // 渲染数学公式的函数
       const renderMath = () => {
         if (window.MathJax && window.MathJax.typesetPromise) {
           try {
@@ -49,6 +51,7 @@ const MathContent = ({ content }) => {
             // 使用MathJax 4.0的API进行渲染
             window.MathJax.typesetPromise([contentRef.current]).then(() => {
               console.log('MathJax 4.0 rendering completed successfully');
+              retryCountRef.current = 0; // 重置重试计数
               
               // 渲染完成后触发目录更新事件
               setTimeout(() => {
@@ -69,14 +72,37 @@ const MathContent = ({ content }) => {
             }, 300);
           }
         } else {
-          // 如果MathJax还未加载，稍后重试
-          console.log('MathJax not ready, retrying in 1 second...');
-          setTimeout(renderMath, 1000);
+          // 如果MathJax还未加载，检查重试次数
+          if (retryCountRef.current < maxRetries) {
+            retryCountRef.current++;
+            console.log(`MathJax not ready, retrying in 1 second... (attempt ${retryCountRef.current}/${maxRetries})`);
+            setTimeout(renderMath, 1000);
+          } else {
+            console.error('MathJax failed to load after maximum retries');
+            // 即使MathJax加载失败，也触发事件确保目录正常工作
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('mathJaxRendered'));
+            }, 300);
+          }
         }
       };
-      
+
+      // 监听MathJax准备就绪事件
+      const handleMathJaxReady = () => {
+        console.log('MathJax ready event received, starting render...');
+        setTimeout(renderMath, 500);
+      };
+
+      // 添加事件监听器
+      window.addEventListener('mathJaxReady', handleMathJaxReady);
+
       // 延迟一点时间确保DOM已更新，并且目录ID设置完成
       setTimeout(renderMath, 1200);
+
+      // 清理函数
+      return () => {
+        window.removeEventListener('mathJaxReady', handleMathJaxReady);
+      };
     }
   }, [content]);
 
@@ -143,6 +169,8 @@ const ArticleDetail = () => {
             typesetPromise: !!window.MathJax.typesetPromise,
             typesetClear: !!window.MathJax.typesetClear
           });
+        } else {
+          console.warn('MathJax not loaded yet');
         }
       };
 
@@ -150,6 +178,23 @@ const ArticleDetail = () => {
       const timer = setTimeout(checkMathJaxStatus, 2000);
       return () => clearTimeout(timer);
     }
+  }, []);
+
+  // 全局MathJax加载状态检查
+  useEffect(() => {
+    const checkMathJaxLoading = () => {
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        console.log('MathJax is ready for rendering');
+        // 触发一个全局事件，通知所有组件MathJax已准备就绪
+        window.dispatchEvent(new CustomEvent('mathJaxReady'));
+      } else {
+        // 如果MathJax还未加载，稍后重试
+        setTimeout(checkMathJaxLoading, 500);
+      }
+    };
+
+    // 开始检查MathJax加载状态
+    checkMathJaxLoading();
   }, []);
 
   useEffect(() => {
