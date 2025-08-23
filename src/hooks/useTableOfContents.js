@@ -38,13 +38,17 @@ const useTableOfContents = (content = '') => {
         return false;
       }
 
+      // 过滤出有效的标题元素
+      const validHeadingElements = headingElements.filter(element => {
+        const text = element.textContent.trim();
+        return text.length > 0;
+      });
+
       const headingsList = [];
 
-      // 处理所有标题元素
-      headingElements.forEach((element, index) => {
+      // 处理所有有效的标题元素
+      validHeadingElements.forEach((element, index) => {
         const text = element.textContent.trim();
-        if (!text) return; // 跳过空标题
-        
         const level = parseInt(element.tagName.charAt(1));
         
         // 确保ID设置成功
@@ -60,18 +64,15 @@ const useTableOfContents = (content = '') => {
         });
       });
 
-      // 确保最后一个标题被正确处理
+      // 确保所有标题都被正确处理
       if (headingsList.length > 0) {
-        const lastIndex = headingsList.length - 1;
-        const lastElement = headingElements[lastIndex];
-        if (lastElement && lastElement.textContent.trim()) {
-          const lastId = `heading-${lastIndex}`;
-          lastElement.id = lastId;
-          lastElement.setAttribute('id', lastId);
-          
-          // 更新最后一个标题的ID
-          headingsList[lastIndex].id = lastId;
-        }
+        // 最终验证所有标题的ID
+        headingsList.forEach((heading, index) => {
+          const expectedId = `heading-${index}`;
+          heading.element.id = expectedId;
+          heading.element.setAttribute('id', expectedId);
+          heading.id = expectedId;
+        });
       }
 
       // 设置标题列表
