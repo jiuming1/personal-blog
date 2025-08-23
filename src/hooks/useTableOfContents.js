@@ -32,9 +32,18 @@ const useTableOfContents = (content = '') => {
         return false;
       }
 
-      // 确保内容元素已经完全渲染
+      // 确保内容元素已经完全渲染，等待一下再查询
       const headingElements = Array.from(contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6'));
       if (headingElements.length === 0) {
+        return false;
+      }
+
+      // 确保所有标题元素都有内容
+      const hasAllContent = headingElements.every(element => {
+        return element.textContent && element.textContent.trim().length > 0;
+      });
+
+      if (!hasAllContent) {
         return false;
       }
 
@@ -77,6 +86,22 @@ const useTableOfContents = (content = '') => {
 
       // 设置标题列表
       if (headingsList.length > 0) {
+        // 确保最后一个标题被正确处理
+        const lastIndex = headingsList.length - 1;
+        if (lastIndex >= 0) {
+          const lastHeading = headingsList[lastIndex];
+          const lastElement = validHeadingElements[lastIndex];
+          
+          if (lastHeading && lastElement) {
+            // 确保最后一个标题的ID正确
+            const lastId = `heading-${lastIndex}`;
+            lastElement.id = lastId;
+            lastElement.setAttribute('id', lastId);
+            lastHeading.id = lastId;
+            lastHeading.element = lastElement;
+          }
+        }
+        
         // 强制重新渲染，确保所有标题都被显示
         setHeadings([...headingsList]);
         return true;
@@ -148,7 +173,7 @@ const useTableOfContents = (content = '') => {
     if (headings.length === 0) return;
 
     const options = {
-      rootMargin: '-10% 0px -60% 0px', // 调整rootMargin，使高亮更准确
+      rootMargin: '-5% 0px -50% 0px', // 调整rootMargin，确保最后一个标题也能被检测到
       threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], // 更精细的阈值
     };
 
