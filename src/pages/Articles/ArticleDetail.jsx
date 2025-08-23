@@ -37,7 +37,7 @@ import { incrementArticleView } from '../../utils/viewCounter';
 const MathContent = ({ content }) => {
   const contentRef = useRef(null);
   const retryCountRef = useRef(0);
-  const maxRetries = 10; // 最大重试次数
+  const maxRetries = 15; // 增加最大重试次数
 
   useEffect(() => {
     if (contentRef.current) {
@@ -75,8 +75,8 @@ const MathContent = ({ content }) => {
           // 如果MathJax还未加载，检查重试次数
           if (retryCountRef.current < maxRetries) {
             retryCountRef.current++;
-            console.log(`MathJax not ready, retrying in 1 second... (attempt ${retryCountRef.current}/${maxRetries})`);
-            setTimeout(renderMath, 1000);
+            console.log(`MathJax not ready, retrying in 2 seconds... (attempt ${retryCountRef.current}/${maxRetries})`);
+            setTimeout(renderMath, 2000); // 增加重试间隔
           } else {
             console.error('MathJax failed to load after maximum retries');
             // 即使MathJax加载失败，也触发事件确保目录正常工作
@@ -97,7 +97,7 @@ const MathContent = ({ content }) => {
       window.addEventListener('mathJaxReady', handleMathJaxReady);
 
       // 延迟一点时间确保DOM已更新，并且目录ID设置完成
-      setTimeout(renderMath, 1200);
+      setTimeout(renderMath, 1500); // 增加初始延迟
 
       // 清理函数
       return () => {
@@ -182,19 +182,31 @@ const ArticleDetail = () => {
 
   // 全局MathJax加载状态检查
   useEffect(() => {
+    let checkCount = 0;
+    const maxChecks = 30; // 最大检查次数
+
     const checkMathJaxLoading = () => {
+      checkCount++;
+      
       if (window.MathJax && window.MathJax.typesetPromise) {
         console.log('MathJax is ready for rendering');
         // 触发一个全局事件，通知所有组件MathJax已准备就绪
         window.dispatchEvent(new CustomEvent('mathJaxReady'));
       } else {
-        // 如果MathJax还未加载，稍后重试
-        setTimeout(checkMathJaxLoading, 500);
+        if (checkCount < maxChecks) {
+          console.log(`MathJax loading check ${checkCount}/${maxChecks}...`);
+          // 如果MathJax还未加载，稍后重试
+          setTimeout(checkMathJaxLoading, 1000);
+        } else {
+          console.error('MathJax failed to load after maximum checks');
+          // 即使MathJax加载失败，也触发事件确保其他功能正常工作
+          window.dispatchEvent(new CustomEvent('mathJaxReady'));
+        }
       }
     };
 
     // 开始检查MathJax加载状态
-    checkMathJaxLoading();
+    setTimeout(checkMathJaxLoading, 1000); // 延迟1秒开始检查
   }, []);
 
   useEffect(() => {
