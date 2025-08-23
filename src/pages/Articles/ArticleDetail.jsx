@@ -451,10 +451,23 @@ const ArticleDetail = () => {
                       setTimeout(() => {
                         const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
                         console.log('ArticleDetail: Found headings:', headings.length);
+                        
+                        // 确保所有标题都有ID
                         headings.forEach((heading, index) => {
                           heading.id = `heading-${index}`;
+                          heading.setAttribute('id', `heading-${index}`);
                           console.log(`ArticleDetail: Set ID for "${heading.textContent.trim()}": heading-${index}`);
                         });
+                        
+                        // 验证最后一个标题
+                        if (headings.length > 0) {
+                          const lastHeading = headings[headings.length - 1];
+                          console.log('ArticleDetail: Last heading check:', {
+                            id: lastHeading.id,
+                            text: lastHeading.textContent.trim(),
+                            index: headings.length - 1
+                          });
+                        }
                         
                         // ID设置完成后触发目录更新事件
                         setTimeout(() => {

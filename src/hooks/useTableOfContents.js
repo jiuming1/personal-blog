@@ -64,6 +64,17 @@ const useTableOfContents = (content = '') => {
       if (headingsList.length > 0) {
         console.log('useTableOfContents: Generated headings:', headingsList.length);
         console.log('useTableOfContents: Headings:', headingsList.map(h => ({ id: h.id, text: h.text })));
+        
+        // 验证最后一个标题是否有ID
+        const lastHeading = headingsList[headingsList.length - 1];
+        if (lastHeading && lastHeading.element) {
+          console.log('useTableOfContents: Last heading ID check:', {
+            id: lastHeading.id,
+            elementId: lastHeading.element.id,
+            text: lastHeading.text
+          });
+        }
+        
         setHeadings(headingsList);
         return true;
       }
@@ -110,19 +121,24 @@ const useTableOfContents = (content = '') => {
       if (findAndProcessHeadings()) {
         observer.disconnect();
       }
-    }, 500);
+    }, 800); // 增加延迟时间
 
     // 再次尝试，确保所有标题都被处理
     setTimeout(() => {
       if (!findAndProcessHeadings()) {
         findAndProcessHeadings();
       }
-    }, 1500);
+    }, 2000); // 增加延迟时间
 
     // 第三次尝试，确保最后一个标题也被处理
     setTimeout(() => {
       findAndProcessHeadings();
-    }, 2000);
+    }, 3000); // 增加延迟时间
+
+    // 第四次尝试，确保最后一个标题也被处理
+    setTimeout(() => {
+      findAndProcessHeadings();
+    }, 4000); // 增加延迟时间
 
     // 设置超时
     setTimeout(() => {
@@ -284,6 +300,11 @@ const useTableOfContents = (content = '') => {
       setTimeout(() => {
         generateHeadings();
       }, 1500); // 增加延迟时间
+      
+      // 额外重试，确保最后一个标题也被处理
+      setTimeout(() => {
+        generateHeadings();
+      }, 2500); // 再次重试
     };
 
     // 监听MathJax渲染完成事件
