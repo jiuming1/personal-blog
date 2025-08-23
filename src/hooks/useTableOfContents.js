@@ -173,7 +173,7 @@ const useTableOfContents = (content = '') => {
     if (headings.length === 0) return;
 
     const options = {
-      rootMargin: '-5% 0px -50% 0px', // 调整rootMargin，确保最后一个标题也能被检测到
+      rootMargin: '-5% 0px -10% 0px', // 调整rootMargin，确保最后一个标题也能被检测到
       threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], // 更精细的阈值
     };
 
@@ -200,6 +200,20 @@ const useTableOfContents = (content = '') => {
           }
         }
       });
+
+      // 特殊处理：检查是否滚动到页面底部
+      const scrollTop = window.pageYOffset;
+      const documentHeight = document.documentElement.scrollHeight;
+      const windowHeight = window.innerHeight;
+      const isAtBottom = scrollTop + windowHeight >= documentHeight - 50;
+      
+      if (isAtBottom && headings.length > 0) {
+        const lastHeading = headings[headings.length - 1];
+        if (lastHeading && lastHeading.id !== activeIdRef.current) {
+          setActiveId(lastHeading.id);
+          return;
+        }
+      }
 
       if (closestEntry && closestEntry.target.id !== activeIdRef.current) {
         setActiveId(closestEntry.target.id);
@@ -358,16 +372,25 @@ const useTableOfContents = (content = '') => {
           if (element) {
             try {
               const rect = element.getBoundingClientRect();
-              // 优先选择在视口内的标题，如果都在视口外，选择最接近顶部的
-              if (rect.top >= 0 && rect.top <= window.innerHeight) {
+              const viewportHeight = window.innerHeight;
+              
+              // 如果标题在视口内或接近视口底部
+              if (rect.top >= 0 && rect.top <= viewportHeight) {
                 const distance = rect.top;
                 if (distance < minDistance) {
                   minDistance = distance;
                   closestHeading = heading;
                 }
-              } else if (closestHeading === null) {
-                // 如果没有在视口内的标题，选择最接近顶部的
-                const distance = Math.abs(rect.top);
+              } else if (rect.top > viewportHeight) {
+                // 如果标题在视口下方，选择最接近视口底部的
+                const distance = rect.top - viewportHeight;
+                if (distance < minDistance) {
+                  minDistance = distance;
+                  closestHeading = heading;
+                }
+              } else if (rect.bottom < 0) {
+                // 如果标题在视口上方，选择最接近视口顶部的
+                const distance = Math.abs(rect.bottom);
                 if (distance < minDistance) {
                   minDistance = distance;
                   closestHeading = heading;
@@ -379,7 +402,18 @@ const useTableOfContents = (content = '') => {
           }
         });
         
-        if (closestHeading && closestHeading.id !== activeIdRef.current) {
+        // 特殊处理：如果滚动到页面底部，激活最后一个标题
+        const scrollTop = window.pageYOffset;
+        const documentHeight = document.documentElement.scrollHeight;
+        const windowHeight = window.innerHeight;
+        const isAtBottom = scrollTop + windowHeight >= documentHeight - 50; // 50px的容差
+        
+        if (isAtBottom && headings.length > 0) {
+          const lastHeading = headings[headings.length - 1];
+          if (lastHeading && lastHeading.id !== activeIdRef.current) {
+            setActiveId(lastHeading.id);
+          }
+        } else if (closestHeading && closestHeading.id !== activeIdRef.current) {
           setActiveId(closestHeading.id);
         }
       };
