@@ -21,15 +21,6 @@
             NN: "\\mathbb{N}",
             ZZ: "\\mathbb{Z}",
             QQ: "\\mathbb{Q}",
-            CC: "\\mathbb{C}",
-            NN: "\\mathbb{N}",
-            ZZ: "\\mathbb{Z}",
-            QQ: "\\mathbb{Q}",
-            CC: "\\mathbb{C}",
-            RR: "\\mathbb{R}",
-            NN: "\\mathbb{N}",
-            ZZ: "\\mathbb{Z}",
-            QQ: "\\mathbb{Q}",
             CC: "\\mathbb{C}"
           }
         },
@@ -47,24 +38,10 @@
               console.log('MathJax 4.0 is ready');
             });
           },
-          typeset: false,
-          ready: () => {
-            console.log('MathJax 4.0 startup ready');
-          }
+          typeset: false
         },
         options: {
-          enableMenu: false,
-          menuOptions: {
-            settings: {
-              texHints: true,
-              semantics: false,
-              zoom: 'NoZoom',
-              zscale: '200%'
-            }
-          }
-        },
-        loader: {
-          load: ['input/tex', 'output/chtml']
+          enableMenu: false
         }
       };
     </script>

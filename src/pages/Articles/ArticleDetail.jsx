@@ -53,20 +53,20 @@ const MathContent = ({ content }) => {
               // 渲染完成后触发目录更新事件
               setTimeout(() => {
                 window.dispatchEvent(new CustomEvent('mathJaxRendered'));
-              }, 200);
+              }, 300);
             }).catch((err) => {
               console.error('MathJax typeset error:', err);
               // 即使出错也触发事件，确保目录能正常工作
               setTimeout(() => {
                 window.dispatchEvent(new CustomEvent('mathJaxRendered'));
-              }, 200);
+              }, 300);
             });
           } catch (error) {
             console.error('MathJax rendering setup error:', error);
             // 出错时也触发事件
             setTimeout(() => {
               window.dispatchEvent(new CustomEvent('mathJaxRendered'));
-            }, 200);
+            }, 300);
           }
         } else {
           // 如果MathJax还未加载，稍后重试
@@ -76,7 +76,7 @@ const MathContent = ({ content }) => {
       };
       
       // 延迟一点时间确保DOM已更新，并且目录ID设置完成
-      setTimeout(renderMath, 1000);
+      setTimeout(renderMath, 1200);
     }
   }, [content]);
 
@@ -86,7 +86,10 @@ const MathContent = ({ content }) => {
       dangerouslySetInnerHTML={{ __html: content }}
       style={{
         lineHeight: '1.8',
-        fontSize: '1.1rem'
+        fontSize: '1.1rem',
+        '& .MathJax': {
+          outline: 'none'
+        }
       }}
     />
   );
@@ -107,23 +110,47 @@ const ArticleDetail = () => {
 
   // 配置marked选项
   useEffect(() => {
-    // 禁用marked的自动ID生成，我们将手动设置ID
+    // 配置marked选项，确保与MathJax兼容
     marked.setOptions({
       breaks: true,
       gfm: true,
       headerPrefix: '',
       mangle: false,
       headerIds: false, // 禁用自动ID生成
+      pedantic: false, // 不严格解析
+      sanitize: false, // 不过滤HTML
+      smartLists: true,
+      smartypants: false // 禁用智能标点，避免干扰数学公式
     });
   }, []);
 
   // 自定义markdown渲染器，支持数学公式 - 使用MathJax
   const renderMarkdownWithMath = (content) => {
-    // 直接使用marked渲染markdown，MathJax会自动处理反引号包围的公式
+    // 直接使用marked渲染markdown，MathJax会自动处理数学公式
     const htmlContent = marked(content);
     
     return htmlContent;
   };
+
+  // 检查MathJax状态
+  useEffect(() => {
+    const checkMathJaxStatus = () => {
+      if (window.MathJax) {
+        console.log('MathJax status:', {
+          version: window.MathJax.version,
+          startup: window.MathJax.startup,
+          typesetPromise: !!window.MathJax.typesetPromise,
+          typesetClear: !!window.MathJax.typesetClear
+        });
+      } else {
+        console.log('MathJax not loaded yet');
+      }
+    };
+
+    // 延迟检查，确保MathJax有时间加载
+    const timer = setTimeout(checkMathJaxStatus, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const currentArticle = getArticleById(id);
@@ -149,7 +176,7 @@ const ArticleDetail = () => {
       const timer = setTimeout(() => {
         // 触发一个自定义事件，通知目录组件内容已更新
         window.dispatchEvent(new CustomEvent('articleContentUpdated'));
-      }, 800);
+      }, 1000);
       
       return () => clearTimeout(timer);
     }
@@ -374,8 +401,8 @@ const ArticleDetail = () => {
                         // ID设置完成后触发目录更新事件
                         setTimeout(() => {
                           window.dispatchEvent(new CustomEvent('articleContentUpdated'));
-                        }, 300);
-                      }, 200);
+                        }, 500);
+                      }, 300);
                     }
                   }}
                   sx={{
