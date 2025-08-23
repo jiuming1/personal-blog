@@ -197,26 +197,77 @@ const useTableOfContents = (content = '') => {
    * 点击目录项跳转到对应位置
    */
   const scrollToHeading = useCallback((headingId) => {
-    // 查找元素
-    const element = document.getElementById(headingId);
+    console.log('scrollToHeading called with:', headingId);
     
-    if (element) {
-      // 立即设置激活状态，提供即时反馈
-      setActiveId(headingId);
+    // 立即设置激活状态，提供即时反馈
+    setActiveId(headingId);
+    
+    // 查找元素的函数
+    const findAndScrollToElement = () => {
+      // 首先尝试通过ID查找
+      let element = document.getElementById(headingId);
       
-      // 使用scrollIntoView方法，优化滚动行为
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center', // 改为center，提供更好的视觉体验
-        inline: 'nearest'
-      });
+      if (element) {
+        console.log('Element found by ID:', headingId);
+      } else {
+        console.log('Element not found by ID, searching in content...');
+        
+        // 如果通过ID找不到，尝试在文章内容区域查找
+        const contentElement = document.querySelector('[data-content="article"]');
+        if (contentElement) {
+          const allHeadings = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
+          console.log('Found headings in content:', allHeadings.length);
+          
+          // 查找匹配的标题
+          for (let heading of allHeadings) {
+            if (heading.id === headingId || heading.textContent.trim() === headingId) {
+              element = heading;
+              console.log('Element found by text content:', heading.textContent.trim());
+              break;
+            }
+          }
+        } else {
+          console.log('Content element not found');
+        }
+      }
       
-      // 添加高亮效果
-      element.style.transition = 'background-color 0.2s ease';
-      element.style.backgroundColor = 'rgba(74, 222, 128, 0.15)';
+      if (element) {
+        console.log('Scrolling to element:', element.textContent.trim());
+        
+        // 使用scrollIntoView方法，优化滚动行为
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center', // 改为center，提供更好的视觉体验
+          inline: 'nearest'
+        });
+        
+        // 添加高亮效果
+        element.style.transition = 'background-color 0.2s ease';
+        element.style.backgroundColor = 'rgba(74, 222, 128, 0.15)';
+        setTimeout(() => {
+          element.style.backgroundColor = '';
+        }, 1500); // 减少高亮持续时间
+        
+        return true; // 成功找到并滚动
+      }
+      
+      console.log('Element not found after all attempts');
+      return false; // 未找到元素
+    };
+    
+    // 立即尝试一次
+    if (!findAndScrollToElement()) {
+      console.log('First attempt failed, retrying...');
+      // 如果立即查找失败，延迟重试
       setTimeout(() => {
-        element.style.backgroundColor = '';
-      }, 1500); // 减少高亮持续时间
+        if (!findAndScrollToElement()) {
+          console.log('Second attempt failed, final retry...');
+          // 如果还是失败，再次重试
+          setTimeout(() => {
+            findAndScrollToElement();
+          }, 500);
+        }
+      }, 100);
     }
   }, []); // 移除headings依赖，避免不必要的重新创建
 
