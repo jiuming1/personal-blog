@@ -468,7 +468,7 @@ const ArticleDetail = () => {
                     color: 'text.primary',
                     fontSize: '1.1rem',
                     scrollBehavior: 'smooth', // 确保平滑滚动
-                    scrollMarginTop: '100px', // 为锚点滚动添加顶部边距
+                    scrollMarginTop: '80px', // 减少顶部边距，确保滚动到正确位置
                     '& h1': {
                       fontSize: '2.5rem',
                       fontWeight: 'bold',

@@ -142,7 +142,7 @@ const useTableOfContents = (content = '') => {
     if (headings.length === 0) return;
 
     const options = {
-      rootMargin: '-20% 0px -70% 0px', // 调整rootMargin，使高亮更准确
+      rootMargin: '-10% 0px -60% 0px', // 调整rootMargin，使高亮更准确
       threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], // 更精细的阈值
     };
 
@@ -216,12 +216,23 @@ const useTableOfContents = (content = '') => {
       }
       
       if (element) {
-        // 使用scrollIntoView方法，优化滚动行为
+        // 使用scrollIntoView方法，确保滚动到正确的标题位置
         element.scrollIntoView({
           behavior: 'smooth',
-          block: 'center', // 改为center，提供更好的视觉体验
+          block: 'start', // 改为start，确保滚动到目标标题的顶部
           inline: 'nearest'
         });
+        
+        // 添加额外的滚动调整，确保标题完全可见
+        setTimeout(() => {
+          const rect = element.getBoundingClientRect();
+          if (rect.top < 80) { // 如果标题被顶部导航栏遮挡
+            window.scrollBy({
+              top: rect.top - 80,
+              behavior: 'smooth'
+            });
+          }
+        }, 100);
         
         // 添加高亮效果
         element.style.transition = 'background-color 0.2s ease';
