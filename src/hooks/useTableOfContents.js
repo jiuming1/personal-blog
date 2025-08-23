@@ -45,13 +45,9 @@ const useTableOfContents = (content = '') => {
         // 生成唯一ID
         const finalId = `heading-${index}`;
         
-        // 尝试多种方式设置ID
-        try {
-          element.id = finalId;
-          element.setAttribute('id', finalId);
-        } catch (error) {
-          console.error('Error setting ID:', error);
-        }
+        // 确保ID设置成功
+        element.id = finalId;
+        element.setAttribute('id', finalId);
 
         headingsList.push({
           id: finalId,
@@ -61,31 +57,14 @@ const useTableOfContents = (content = '') => {
         });
       });
 
-      // 验证ID设置是否成功
-      const allElements = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
-      const elementsWithIds = Array.from(allElements).map(el => ({ id: el.id, text: el.textContent.trim() }));
-
-      // 检查是否有空的ID
-      const emptyIds = elementsWithIds.filter(el => !el.id);
-      if (emptyIds.length > 0) {
-        return false;
-      }
-      
-      // 验证所有ID都能被找到
-      let allFound = true;
-      headingsList.forEach((heading) => {
-        const element = document.getElementById(heading.id);
-        if (!element) {
-          allFound = false;
-        }
-      });
-      
-      if (allFound) {
+      // 验证所有标题都被正确处理
+      if (headingsList.length > 0) {
+        console.log('Generated headings:', headingsList.length);
         setHeadings(headingsList);
         return true;
-      } else {
-        return false;
       }
+      
+      return false;
     };
 
     // 使用MutationObserver监听DOM变化
@@ -127,12 +106,19 @@ const useTableOfContents = (content = '') => {
       if (findAndProcessHeadings()) {
         observer.disconnect();
       }
-    }, 500);
+    }, 300);
+
+    // 再次尝试，确保所有标题都被处理
+    setTimeout(() => {
+      if (!findAndProcessHeadings()) {
+        findAndProcessHeadings();
+      }
+    }, 1000);
 
     // 设置超时
     setTimeout(() => {
       observer.disconnect();
-    }, 15000);
+    }, 10000);
 
     return () => observer.disconnect();
   }, []);
@@ -148,8 +134,8 @@ const useTableOfContents = (content = '') => {
     if (headings.length === 0) return;
 
     const options = {
-      rootMargin: '-10% 0px -60% 0px', // 调整rootMargin，使高亮更敏感
-      threshold: [0, 0.25, 0.5, 0.75, 1], // 添加多个阈值
+      rootMargin: '-20% 0px -70% 0px', // 调整rootMargin，使高亮更准确
+      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], // 更精细的阈值
     };
 
     observerRef.current = new IntersectionObserver((entries) => {
@@ -176,7 +162,7 @@ const useTableOfContents = (content = '') => {
         }
       });
 
-      if (closestEntry) {
+      if (closestEntry && closestEntry.target.id !== activeIdRef.current) {
         setActiveId(closestEntry.target.id);
       }
     }, options);
@@ -197,8 +183,6 @@ const useTableOfContents = (content = '') => {
    * 点击目录项跳转到对应位置
    */
   const scrollToHeading = useCallback((headingId) => {
-    console.log('scrollToHeading called with:', headingId);
-    
     // 立即设置激活状态，提供即时反馈
     setActiveId(headingId);
     
@@ -207,33 +191,23 @@ const useTableOfContents = (content = '') => {
       // 首先尝试通过ID查找
       let element = document.getElementById(headingId);
       
-      if (element) {
-        console.log('Element found by ID:', headingId);
-      } else {
-        console.log('Element not found by ID, searching in content...');
-        
+      if (!element) {
         // 如果通过ID找不到，尝试在文章内容区域查找
         const contentElement = document.querySelector('[data-content="article"]');
         if (contentElement) {
           const allHeadings = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
-          console.log('Found headings in content:', allHeadings.length);
           
           // 查找匹配的标题
           for (let heading of allHeadings) {
-            if (heading.id === headingId || heading.textContent.trim() === headingId) {
+            if (heading.id === headingId) {
               element = heading;
-              console.log('Element found by text content:', heading.textContent.trim());
               break;
             }
           }
-        } else {
-          console.log('Content element not found');
         }
       }
       
       if (element) {
-        console.log('Scrolling to element:', element.textContent.trim());
-        
         // 使用scrollIntoView方法，优化滚动行为
         element.scrollIntoView({
           behavior: 'smooth',
@@ -251,23 +225,20 @@ const useTableOfContents = (content = '') => {
         return true; // 成功找到并滚动
       }
       
-      console.log('Element not found after all attempts');
       return false; // 未找到元素
     };
     
     // 立即尝试一次
     if (!findAndScrollToElement()) {
-      console.log('First attempt failed, retrying...');
       // 如果立即查找失败，延迟重试
       setTimeout(() => {
         if (!findAndScrollToElement()) {
-          console.log('Second attempt failed, final retry...');
           // 如果还是失败，再次重试
           setTimeout(() => {
             findAndScrollToElement();
-          }, 500);
+          }, 300);
         }
-      }, 100);
+      }, 50);
     }
   }, []); // 移除headings依赖，避免不必要的重新创建
 
@@ -331,10 +302,20 @@ const useTableOfContents = (content = '') => {
           if (element) {
             try {
               const rect = element.getBoundingClientRect();
-              const distance = Math.abs(rect.top);
-              if (distance < minDistance) {
-                minDistance = distance;
-                closestHeading = heading;
+              // 优先选择在视口内的标题，如果都在视口外，选择最接近顶部的
+              if (rect.top >= 0 && rect.top <= window.innerHeight) {
+                const distance = rect.top;
+                if (distance < minDistance) {
+                  minDistance = distance;
+                  closestHeading = heading;
+                }
+              } else if (closestHeading === null) {
+                // 如果没有在视口内的标题，选择最接近顶部的
+                const distance = Math.abs(rect.top);
+                if (distance < minDistance) {
+                  minDistance = distance;
+                  closestHeading = heading;
+                }
               }
             } catch (error) {
               console.error('Error accessing getBoundingClientRect:', error);
