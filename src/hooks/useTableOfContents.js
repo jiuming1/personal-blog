@@ -201,24 +201,24 @@ const useTableOfContents = (content = '') => {
     const element = document.getElementById(headingId);
     
     if (element) {
-      // 使用scrollIntoView方法
+      // 立即设置激活状态，提供即时反馈
+      setActiveId(headingId);
+      
+      // 使用scrollIntoView方法，优化滚动行为
       element.scrollIntoView({
         behavior: 'smooth',
-        block: 'start',
+        block: 'center', // 改为center，提供更好的视觉体验
         inline: 'nearest'
       });
       
-      // 手动设置激活状态
-      setActiveId(headingId);
-      
       // 添加高亮效果
-      element.style.transition = 'background-color 0.3s ease';
-      element.style.backgroundColor = 'rgba(74, 222, 128, 0.1)';
+      element.style.transition = 'background-color 0.2s ease';
+      element.style.backgroundColor = 'rgba(74, 222, 128, 0.15)';
       setTimeout(() => {
         element.style.backgroundColor = '';
-      }, 2000);
+      }, 1500); // 减少高亮持续时间
     }
-  }, [headings]);
+  }, []); // 移除headings依赖，避免不必要的重新创建
 
   /**
    * 初始化目录功能

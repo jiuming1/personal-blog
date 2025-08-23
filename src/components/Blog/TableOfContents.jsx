@@ -65,11 +65,7 @@ const TableOfContents = ({ headings, activeId, onHeadingClick }) => {
                  {headings.map((heading, index) => (
            <Box
              key={heading.id || `heading-${index}`}
-             onClick={(e) => {
-               e.preventDefault();
-               e.stopPropagation();
-               onHeadingClick(heading.id);
-             }}
+             onClick={() => onHeadingClick(heading.id)}
              sx={{
                px: 2,
                py: 1.5,
