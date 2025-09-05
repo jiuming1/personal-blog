@@ -1,454 +1,148 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 /**
- * 目录大纲自定义Hook
- * @param {string} content - 文章内容，用于触发目录重新生成
+ * 简洁的目录钩子 - 使用标准DOM查询和滚动监听
+ * @param {string} content - 文章内容
  * @returns {Object} 返回目录相关的状态和方法
  */
 const useTableOfContents = (content = '') => {
   const [headings, setHeadings] = useState([]);
   const [activeId, setActiveId] = useState('');
-  const observerRef = useRef(null);
-  const contentRef = useRef(null);
-  const activeIdRef = useRef(activeId); // 添加activeId的ref
-  const isScrollingToHeadingRef = useRef(false); // 添加标志防止滚动监听器干扰
 
   /**
-   * 生成标题的唯一ID - 使用简单的索引ID
+   * 生成目录数据
    */
-  const generateHeadingId = (text, index) => {
-    // 使用简单的索引ID，确保唯一性
-    return `heading-${index}`;
-  };
-
-  /**
-   * 获取所有标题元素并生成目录
-   */
-  const generateHeadings = useCallback(() => {
-    const findAndProcessHeadings = () => {
-      // 使用更可靠的DOM查询方式
+  const generateTOC = useCallback(() => {
+    // 等待DOM渲染完成
+    setTimeout(() => {
       const contentElement = document.querySelector('[data-content="article"]');
-      if (!contentElement) {
-        return false;
-      }
+      if (!contentElement) return;
 
-      // 确保内容元素已经完全渲染，等待一下再查询
-      const headingElements = Array.from(contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6'));
-      if (headingElements.length === 0) {
-        return false;
-      }
+      // 查询所有标题元素
+      const headingElements = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      
+      if (headingElements.length === 0) return;
 
-      // 确保所有标题元素都有内容
-      const hasAllContent = headingElements.every(element => {
-        return element.textContent && element.textContent.trim().length > 0;
-      });
+      const tocItems = [];
+      
+      headingElements.forEach((element, index) => {
+        const text = element.textContent?.trim();
+        if (!text) return;
 
-      if (!hasAllContent) {
-        return false;
-      }
-
-      // 过滤出有效的标题元素
-      const validHeadingElements = headingElements.filter(element => {
-        const text = element.textContent.trim();
-        return text.length > 0;
-      });
-
-      const headingsList = [];
-
-      // 处理所有有效的标题元素
-      validHeadingElements.forEach((element, index) => {
-        const text = element.textContent.trim();
         const level = parseInt(element.tagName.charAt(1));
+        const id = `heading-${index}`;
         
-        // 确保ID设置成功
-        const finalId = `heading-${index}`;
-        element.id = finalId;
-        element.setAttribute('id', finalId);
+        // 设置元素ID
+        element.id = id;
+        element.setAttribute('id', id);
 
-        headingsList.push({
-          id: finalId,
+        tocItems.push({
+          id,
           text,
           level,
-          element,
+          element
         });
       });
 
-      // 确保所有标题都被正确处理
-      if (headingsList.length > 0) {
-        // 最终验证所有标题的ID
-        headingsList.forEach((heading, index) => {
-          const expectedId = `heading-${index}`;
-          heading.element.id = expectedId;
-          heading.element.setAttribute('id', expectedId);
-          heading.id = expectedId;
-        });
+      if (tocItems.length > 0) {
+        setHeadings(tocItems);
       }
+    }, 100);
+  }, [content]);
 
-      // 设置标题列表
-      if (headingsList.length > 0) {
-        // 确保最后一个标题被正确处理
-        const lastIndex = headingsList.length - 1;
-        if (lastIndex >= 0) {
-          const lastHeading = headingsList[lastIndex];
-          const lastElement = validHeadingElements[lastIndex];
-          
-          if (lastHeading && lastElement) {
-            // 确保最后一个标题的ID正确
-            const lastId = `heading-${lastIndex}`;
-            lastElement.id = lastId;
-            lastElement.setAttribute('id', lastId);
-            lastHeading.id = lastId;
-            lastHeading.element = lastElement;
-          }
-        }
-        
-        // 强制重新渲染，确保所有标题都被显示
-        setHeadings([...headingsList]);
-        return true;
+  /**
+   * 滚动监听 - 使用简单的getBoundingClientRect方法
+   */
+  const handleScroll = useCallback(() => {
+    if (headings.length === 0) return;
+
+    const scrollTop = window.pageYOffset;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    // 检查是否滚动到页面底部
+    const isAtBottom = scrollTop + windowHeight >= documentHeight - 100;
+
+    if (isAtBottom) {
+      // 滚动到底部时，激活最后一个标题
+      const lastHeading = headings[headings.length - 1];
+      if (lastHeading && lastHeading.id !== activeId) {
+        setActiveId(lastHeading.id);
       }
-      
-      return false;
-    };
+      return;
+    }
 
-    // 使用MutationObserver监听DOM变化
-    const observer = new MutationObserver((mutations) => {
-      let shouldCheck = false;
+    // 遍历所有标题，找到当前应该激活的标题
+    for (let i = 0; i < headings.length; i++) {
+      const heading = headings[i];
+      const element = document.getElementById(heading.id);
       
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              if (node.querySelector && node.querySelector('[data-content="article"]')) {
-                shouldCheck = true;
-              }
-              if (node.matches && node.matches('[data-content="article"]')) {
-                shouldCheck = true;
-              }
-            }
-          });
+      if (!element) continue;
+
+      const rect = element.getBoundingClientRect();
+      const isInViewport = rect.top >= 0 && rect.top <= windowHeight * 0.3; // 标题在视口上方30%时激活
+      
+      if (isInViewport) {
+        if (heading.id !== activeId) {
+          setActiveId(heading.id);
         }
+        break;
+      }
+    }
+  }, [headings, activeId]);
+
+  /**
+   * 点击标题跳转
+   */
+  const scrollToHeading = useCallback((headingId) => {
+    const element = document.getElementById(headingId);
+    if (element) {
+      const rect = element.getBoundingClientRect();
+      const scrollTop = window.pageYOffset;
+      const targetScrollTop = scrollTop + rect.top - 80; // 80px为顶部导航栏高度
+      
+      window.scrollTo({
+        top: targetScrollTop,
+        behavior: 'smooth'
       });
-
-      if (shouldCheck) {
-        setTimeout(() => {
-          if (findAndProcessHeadings()) {
-            observer.disconnect();
-          }
-        }, 500);
-      }
-    });
-
-    // 开始观察
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-
-    // 多次尝试确保所有标题都被处理
-    const attempts = [800, 1500, 2500, 3500];
-    attempts.forEach((delay, index) => {
-      setTimeout(() => {
-        if (findAndProcessHeadings()) {
-          observer.disconnect();
-        }
-      }, delay);
-    });
-
-    // 设置超时
-    setTimeout(() => {
-      observer.disconnect();
-    }, 10000);
-
-    return () => observer.disconnect();
+      
+      setActiveId(headingId);
+    }
   }, []);
 
   /**
-   * 设置Intersection Observer监听滚动
-   */
-  const setupIntersectionObserver = useCallback(() => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
-
-    if (headings.length === 0) return;
-
-    const options = {
-      rootMargin: '-5% 0px -10% 0px', // 调整rootMargin，确保最后一个标题也能被检测到
-      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], // 更精细的阈值
-    };
-
-    observerRef.current = new IntersectionObserver((entries) => {
-      // 使用与手动滚动监听相同的逻辑
-      const viewHeight = window.innerHeight;
-      
-      // 遍历所有标题，找到应该高亮的标题
-      for (let i = 0; i < headings.length; i++) {
-        const heading = headings[i];
-        const element = document.getElementById(heading.id);
-        
-        if (element) {
-          try {
-            const rect = element.getBoundingClientRect();
-            
-            // 如果标题在视口内
-            if (rect.bottom >= 0 && rect.top < viewHeight) {
-              if (heading.id !== activeIdRef.current) {
-                setActiveId(heading.id);
-              }
-              break;
-            }
-            
-            // 特殊处理：如果当前标题在视口上方，下一个标题在视口下方或不存在
-            const nextHeading = headings[i + 1];
-            if (nextHeading) {
-              const nextElement = document.getElementById(nextHeading.id);
-              if (nextElement) {
-                const nextRect = nextElement.getBoundingClientRect();
-                // 当前标题在视口上方，下一个标题在视口下方
-                if (rect.bottom < 0 && nextRect.top > viewHeight) {
-                  if (heading.id !== activeIdRef.current) {
-                    setActiveId(heading.id);
-                  }
-                  break;
-                }
-              }
-            } else {
-              // 如果没有下一个标题，且当前标题在视口上方，高亮当前标题
-              if (rect.bottom < 0) {
-                if (heading.id !== activeIdRef.current) {
-                  setActiveId(heading.id);
-                }
-                break;
-              }
-            }
-          } catch (error) {
-            console.error('Error accessing getBoundingClientRect:', error);
-          }
-        }
-      }
-    }, options);
-
-    // 延迟设置观察器，确保DOM元素已经准备好
-    setTimeout(() => {
-      // 监听所有标题元素
-      headings.forEach((heading) => {
-        const element = document.getElementById(heading.id);
-        if (element) {
-          observerRef.current.observe(element);
-        }
-      });
-    }, 200);
-  }, [headings]);
-
-  /**
-   * 点击目录项跳转到对应位置
-   */
-  const scrollToHeading = useCallback((headingId) => {
-    // 设置滚动标志，防止滚动监听器干扰
-    isScrollingToHeadingRef.current = true;
-    
-    // 立即设置激活状态，提供即时反馈
-    setActiveId(headingId);
-    
-    // 查找元素的函数
-    const findAndScrollToElement = () => {
-      // 首先尝试通过ID查找
-      let element = document.getElementById(headingId);
-      
-      if (!element) {
-        // 如果通过ID找不到，尝试在文章内容区域查找
-        const contentElement = document.querySelector('[data-content="article"]');
-        if (contentElement) {
-          const allHeadings = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
-          
-          // 查找匹配的标题
-          for (let heading of allHeadings) {
-            if (heading.id === headingId) {
-              element = heading;
-              break;
-            }
-          }
-        }
-      }
-      
-      if (element) {
-        // 计算目标滚动位置，确保标题在视口顶部
-        const rect = element.getBoundingClientRect();
-        const currentScrollTop = window.pageYOffset;
-        const targetScrollTop = currentScrollTop + rect.top - 80; // 80px为顶部导航栏高度
-        
-        // 使用window.scrollTo进行精确滚动
-        window.scrollTo({
-          top: targetScrollTop,
-          behavior: 'smooth'
-        });
-        
-        // 滚动完成后清除标志
-        setTimeout(() => {
-          isScrollingToHeadingRef.current = false;
-        }, 1000); // 给滚动动画足够时间完成
-        
-        // 添加高亮效果
-        element.style.transition = 'background-color 0.2s ease';
-        element.style.backgroundColor = 'rgba(74, 222, 128, 0.15)';
-        setTimeout(() => {
-          element.style.backgroundColor = '';
-        }, 1500); // 减少高亮持续时间
-        
-        return true; // 成功找到并滚动
-      }
-      
-      return false; // 未找到元素
-    };
-    
-    // 立即尝试一次
-    if (!findAndScrollToElement()) {
-      // 如果立即查找失败，延迟重试
-      setTimeout(() => {
-        if (!findAndScrollToElement()) {
-          // 如果还是失败，再次重试
-          setTimeout(() => {
-            findAndScrollToElement();
-          }, 300);
-        }
-      }, 50);
-    }
-  }, []); // 移除headings依赖，避免不必要的重新创建
-
-  /**
-   * 初始化目录功能
+   * 初始化
    */
   useEffect(() => {
     if (!content) return;
 
-    // 清理之前的观察器
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
-
-    // 延迟执行，确保marked渲染完成
-    const timer = setTimeout(() => {
-      generateHeadings();
-    }, 1500); // 增加延迟时间
-
-    // 监听文章内容更新事件
-    const handleContentUpdate = () => {
-      setTimeout(() => {
-        generateHeadings();
-      }, 1000);
-    };
-
-    // 监听MathJax渲染完成事件
-    const handleMathJaxRendered = () => {
-      setTimeout(() => {
-        generateHeadings();
-      }, 1000); // MathJax渲染后重新生成目录
-    };
-
-    window.addEventListener('articleContentUpdated', handleContentUpdate);
-    window.addEventListener('mathJaxRendered', handleMathJaxRendered);
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('articleContentUpdated', handleContentUpdate);
-      window.removeEventListener('mathJaxRendered', handleMathJaxRendered);
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [content, generateHeadings]);
+    // 延迟生成目录，确保DOM已渲染
+    const timer = setTimeout(generateTOC, 500);
+    
+    return () => clearTimeout(timer);
+  }, [content, generateTOC]);
 
   /**
-   * 当标题列表更新时设置观察器
+   * 设置滚动监听
    */
   useEffect(() => {
-    if (headings.length > 0) {
-      setupIntersectionObserver();
-      
-      // 添加手动滚动监听作为备用方案 - 参考Plumbiu的实现思路
-      const handleScroll = () => {
-        // 如果正在执行点击滚动，跳过手动滚动处理
-        if (isScrollingToHeadingRef.current) {
-          return;
-        }
-        
-        const viewHeight = window.innerHeight;
-        
-        // 遍历所有标题，找到应该高亮的标题
-        for (let i = 0; i < headings.length; i++) {
-          const heading = headings[i];
-          const element = document.getElementById(heading.id);
-          
-          if (element) {
-            try {
-              const rect = element.getBoundingClientRect();
-              
-              // 如果标题在视口内（参考Plumbiu的实现）
-              if (rect.bottom >= 0 && rect.top < viewHeight) {
-                if (heading.id !== activeIdRef.current) {
-                  setActiveId(heading.id);
-                }
-                break;
-              }
-              
-              // 特殊处理：如果当前标题在视口上方，下一个标题在视口下方或不存在
-              // 这种情况应该高亮当前标题（参考Plumbiu的补充逻辑）
-              const nextHeading = headings[i + 1];
-              if (nextHeading) {
-                const nextElement = document.getElementById(nextHeading.id);
-                if (nextElement) {
-                  const nextRect = nextElement.getBoundingClientRect();
-                  // 当前标题在视口上方，下一个标题在视口下方
-                  if (rect.bottom < 0 && nextRect.top > viewHeight) {
-                    if (heading.id !== activeIdRef.current) {
-                      setActiveId(heading.id);
-                    }
-                    break;
-                  }
-                }
-              } else {
-                // 如果没有下一个标题，且当前标题在视口上方，高亮当前标题
-                // 这确保了最后一个标题在滚动到页面底部时能被正确高亮
-                if (rect.bottom < 0) {
-                  if (heading.id !== activeIdRef.current) {
-                    setActiveId(heading.id);
-                  }
-                  break;
-                }
-              }
-            } catch (error) {
-              console.error('Error accessing getBoundingClientRect:', error);
-            }
-          }
-        }
-      };
-      
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-        if (observerRef.current) {
-          observerRef.current.disconnect();
-        }
-      };
-    }
+    if (headings.length === 0) return;
 
+    // 初始检查
+    handleScroll();
+
+    // 添加滚动监听
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
+      window.removeEventListener('scroll', handleScroll);
     };
-  }, [headings, setupIntersectionObserver]); // 移除activeId依赖
-
-  // 更新activeIdRef
-  useEffect(() => {
-    activeIdRef.current = activeId;
-  }, [activeId]);
+  }, [headings, handleScroll]);
 
   return {
     headings,
     activeId,
-    scrollToHeading,
+    scrollToHeading
   };
 };
 
