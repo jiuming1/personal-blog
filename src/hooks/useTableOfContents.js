@@ -178,45 +178,53 @@ const useTableOfContents = (content = '') => {
     };
 
     observerRef.current = new IntersectionObserver((entries) => {
-      // 找到最接近视口顶部的可见标题
-      let closestEntry = null;
-      let minDistance = Infinity;
-
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
+      // 使用与手动滚动监听相同的逻辑
+      const viewHeight = window.innerHeight;
+      
+      // 遍历所有标题，找到应该高亮的标题
+      for (let i = 0; i < headings.length; i++) {
+        const heading = headings[i];
+        const element = document.getElementById(heading.id);
+        
+        if (element) {
           try {
-            const rect = entry.boundingClientRect;
-            const distance = Math.abs(rect.top);
-            if (distance < minDistance) {
-              minDistance = distance;
-              closestEntry = entry;
+            const rect = element.getBoundingClientRect();
+            
+            // 如果标题在视口内
+            if (rect.bottom >= 0 && rect.top < viewHeight) {
+              if (heading.id !== activeIdRef.current) {
+                setActiveId(heading.id);
+              }
+              break;
+            }
+            
+            // 特殊处理：如果当前标题在视口上方，下一个标题在视口下方或不存在
+            const nextHeading = headings[i + 1];
+            if (nextHeading) {
+              const nextElement = document.getElementById(nextHeading.id);
+              if (nextElement) {
+                const nextRect = nextElement.getBoundingClientRect();
+                // 当前标题在视口上方，下一个标题在视口下方
+                if (rect.bottom < 0 && nextRect.top > viewHeight) {
+                  if (heading.id !== activeIdRef.current) {
+                    setActiveId(heading.id);
+                  }
+                  break;
+                }
+              }
+            } else {
+              // 如果没有下一个标题，且当前标题在视口上方，高亮当前标题
+              if (rect.bottom < 0) {
+                if (heading.id !== activeIdRef.current) {
+                  setActiveId(heading.id);
+                }
+                break;
+              }
             }
           } catch (error) {
-            console.error('Error accessing boundingClientRect:', error);
-            // 如果boundingClientRect不可用，使用备用方法
-            if (entry.target && entry.target.id) {
-              closestEntry = entry;
-            }
+            console.error('Error accessing getBoundingClientRect:', error);
           }
         }
-      });
-
-      // 特殊处理：检查是否滚动到页面底部
-      const scrollTop = window.pageYOffset;
-      const documentHeight = document.documentElement.scrollHeight;
-      const windowHeight = window.innerHeight;
-      const isAtBottom = scrollTop + windowHeight >= documentHeight - 50;
-      
-      if (isAtBottom && headings.length > 0) {
-        const lastHeading = headings[headings.length - 1];
-        if (lastHeading && lastHeading.id !== activeIdRef.current) {
-          setActiveId(lastHeading.id);
-          return;
-        }
-      }
-
-      if (closestEntry && closestEntry.target.id !== activeIdRef.current) {
-        setActiveId(closestEntry.target.id);
       }
     }, options);
 
@@ -357,64 +365,61 @@ const useTableOfContents = (content = '') => {
     if (headings.length > 0) {
       setupIntersectionObserver();
       
-      // 添加手动滚动监听作为备用方案
+      // 添加手动滚动监听作为备用方案 - 参考Plumbiu的实现思路
       const handleScroll = () => {
         // 如果正在执行点击滚动，跳过手动滚动处理
         if (isScrollingToHeadingRef.current) {
           return;
         }
         
-        let closestHeading = null;
-        let minDistance = Infinity;
+        const viewHeight = window.innerHeight;
         
-        headings.forEach((heading) => {
+        // 遍历所有标题，找到应该高亮的标题
+        for (let i = 0; i < headings.length; i++) {
+          const heading = headings[i];
           const element = document.getElementById(heading.id);
+          
           if (element) {
             try {
               const rect = element.getBoundingClientRect();
-              const viewportHeight = window.innerHeight;
               
-              // 如果标题在视口内或接近视口底部
-              if (rect.top >= 0 && rect.top <= viewportHeight) {
-                const distance = rect.top;
-                if (distance < minDistance) {
-                  minDistance = distance;
-                  closestHeading = heading;
+              // 如果标题在视口内（参考Plumbiu的实现）
+              if (rect.bottom >= 0 && rect.top < viewHeight) {
+                if (heading.id !== activeIdRef.current) {
+                  setActiveId(heading.id);
                 }
-              } else if (rect.top > viewportHeight) {
-                // 如果标题在视口下方，选择最接近视口底部的
-                const distance = rect.top - viewportHeight;
-                if (distance < minDistance) {
-                  minDistance = distance;
-                  closestHeading = heading;
+                break;
+              }
+              
+              // 特殊处理：如果当前标题在视口上方，下一个标题在视口下方或不存在
+              // 这种情况应该高亮当前标题（参考Plumbiu的补充逻辑）
+              const nextHeading = headings[i + 1];
+              if (nextHeading) {
+                const nextElement = document.getElementById(nextHeading.id);
+                if (nextElement) {
+                  const nextRect = nextElement.getBoundingClientRect();
+                  // 当前标题在视口上方，下一个标题在视口下方
+                  if (rect.bottom < 0 && nextRect.top > viewHeight) {
+                    if (heading.id !== activeIdRef.current) {
+                      setActiveId(heading.id);
+                    }
+                    break;
+                  }
                 }
-              } else if (rect.bottom < 0) {
-                // 如果标题在视口上方，选择最接近视口顶部的
-                const distance = Math.abs(rect.bottom);
-                if (distance < minDistance) {
-                  minDistance = distance;
-                  closestHeading = heading;
+              } else {
+                // 如果没有下一个标题，且当前标题在视口上方，高亮当前标题
+                // 这确保了最后一个标题在滚动到页面底部时能被正确高亮
+                if (rect.bottom < 0) {
+                  if (heading.id !== activeIdRef.current) {
+                    setActiveId(heading.id);
+                  }
+                  break;
                 }
               }
             } catch (error) {
               console.error('Error accessing getBoundingClientRect:', error);
             }
           }
-        });
-        
-        // 特殊处理：如果滚动到页面底部，激活最后一个标题
-        const scrollTop = window.pageYOffset;
-        const documentHeight = document.documentElement.scrollHeight;
-        const windowHeight = window.innerHeight;
-        const isAtBottom = scrollTop + windowHeight >= documentHeight - 50; // 50px的容差
-        
-        if (isAtBottom && headings.length > 0) {
-          const lastHeading = headings[headings.length - 1];
-          if (lastHeading && lastHeading.id !== activeIdRef.current) {
-            setActiveId(lastHeading.id);
-          }
-        } else if (closestHeading && closestHeading.id !== activeIdRef.current) {
-          setActiveId(closestHeading.id);
         }
       };
       
