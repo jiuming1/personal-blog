@@ -18,8 +18,8 @@ const useTableOfContents = (content = '') => {
       const contentElement = document.querySelector('[data-content="article"]');
       if (!contentElement) return;
 
-      // 查询所有标题元素
-      const headingElements = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      // 只查询一级标题元素
+      const headingElements = contentElement.querySelectorAll('h1');
       
       if (headingElements.length === 0) return;
 
