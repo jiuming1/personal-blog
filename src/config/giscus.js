@@ -12,14 +12,14 @@ export const GISCUS_CONFIG = {
   repoId: 'R_kgDOPhFB2A', // 实际的仓库ID
   
   // 分类名称
-  category: 'General',
+  category: 'Announcements',
   
   // 分类ID - 从Giscus配置页面获取
   // 获取方式：https://api.github.com/repos/jiuming1/personal-blog/discussions/categories
-  categoryId: 'DIC_kwDOPhFB2M4CvCXa', // 实际的分类ID
+  categoryId: 'DIC_kwDOPhFB2M4CvCXZ', // 实际的分类ID
   
-  // 映射方式：title - 使用页面标题作为标识（更稳定）
-  mapping: 'title',
+  // 映射方式：pathname - 使用页面路径作为标识
+  mapping: 'pathname',
   
   // 严格模式：0 - 不严格匹配
   strict: '0',
