@@ -14,9 +14,9 @@ export const GISCUS_CONFIG = {
   // 分类名称
   category: 'General',
   
-  // 分类ID - 需要先启用Discussions功能后获取
+  // 分类ID - 从Giscus配置页面获取
   // 获取方式：https://api.github.com/repos/jiuming1/personal-blog/discussions/categories
-  categoryId: 'DIC_kwDOLhJhJc4CgJhJ', // 启用Discussions后需要更新此ID
+  categoryId: 'DIC_kwDOPhFB2M4CvCXa', // 实际的分类ID
   
   // 映射方式：pathname - 使用页面路径作为标识
   mapping: 'pathname',
@@ -48,6 +48,6 @@ export const GISCUS_CONFIG = {
 export const getGiscusConfig = (theme = 'light') => {
   return {
     ...GISCUS_CONFIG,
-    theme: theme === 'dark' ? 'dark' : 'light',
+    theme: 'preferred_color_scheme', // 使用系统偏好主题
   };
 };
