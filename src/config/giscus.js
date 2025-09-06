@@ -18,8 +18,8 @@ export const GISCUS_CONFIG = {
   // 获取方式：https://api.github.com/repos/jiuming1/personal-blog/discussions/categories
   categoryId: 'DIC_kwDOPhFB2M4CvCXa', // 实际的分类ID
   
-  // 映射方式：pathname - 使用页面路径作为标识
-  mapping: 'pathname',
+  // 映射方式：title - 使用页面标题作为标识（更稳定）
+  mapping: 'title',
   
   // 严格模式：0 - 不严格匹配
   strict: '0',

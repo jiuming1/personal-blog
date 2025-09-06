@@ -23,6 +23,11 @@ const GiscusComments = ({ articleId, articleTitle }) => {
     // 获取Giscus配置
     const config = getGiscusConfig(theme.palette.mode);
 
+    // 调试信息
+    console.log('Giscus配置:', config);
+    console.log('文章ID:', articleId);
+    console.log('文章标题:', articleTitle);
+
     // 创建Giscus脚本
     const script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
@@ -40,6 +45,11 @@ const GiscusComments = ({ articleId, articleTitle }) => {
     script.setAttribute('data-loading', config.loading);
     script.setAttribute('crossorigin', 'anonymous');
     script.async = true;
+
+    // 添加错误处理
+    script.onerror = (error) => {
+      console.error('Giscus脚本加载失败:', error);
+    };
 
     // 添加到容器中
     if (giscusRef.current) {
