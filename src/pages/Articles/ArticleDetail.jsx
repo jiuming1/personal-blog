@@ -13,6 +13,7 @@ import {
   Link as MuiLink,
 } from '@mui/material';
 import TableOfContents from '../../components/Blog/TableOfContents';
+import GiscusComments from '../../components/Blog/GiscusComments';
 import useTableOfContents from '../../hooks/useTableOfContents';
 import {
   ArrowBack as ArrowBackIcon,
@@ -649,6 +650,14 @@ const ArticleDetail = () => {
             </Paper>
           </motion.div>
         )}
+
+        {/* 评论区域 */}
+        <motion.div variants={itemVariants}>
+          <GiscusComments 
+            articleId={article.id} 
+            articleTitle={article.title} 
+          />
+        </motion.div>
       </Container>
     </motion.div>
   );
