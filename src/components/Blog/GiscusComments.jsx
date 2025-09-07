@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { Box, Typography, Paper, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Message as MessageIcon } from '@mui/icons-material';
-import { getGiscusConfig } from '../../config/giscus';
 
 /**
  * Giscus评论组件
@@ -20,35 +19,37 @@ const GiscusComments = ({ articleId, articleTitle }) => {
       giscusRef.current.innerHTML = '';
     }
 
-    // 获取Giscus配置
-    const config = getGiscusConfig(theme.palette.mode);
-
     // 调试信息
-    console.log('Giscus配置:', config);
     console.log('文章ID:', articleId);
     console.log('文章标题:', articleTitle);
+    console.log('主题模式:', theme.palette.mode);
 
-    // 创建Giscus脚本
+    // 创建Giscus脚本 - 使用你提供的配置
     const script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
-    script.setAttribute('data-repo', config.repo);
-    script.setAttribute('data-repo-id', config.repoId);
-    script.setAttribute('data-category', config.category);
-    script.setAttribute('data-category-id', config.categoryId);
-    script.setAttribute('data-mapping', config.mapping);
-    script.setAttribute('data-strict', config.strict);
-    script.setAttribute('data-reactions-enabled', config.reactionsEnabled);
-    script.setAttribute('data-emit-metadata', config.emitMetadata);
-    script.setAttribute('data-input-position', config.inputPosition);
-    script.setAttribute('data-theme', config.theme);
-    script.setAttribute('data-lang', config.lang);
-    script.setAttribute('data-loading', config.loading);
+    script.setAttribute('data-repo', 'jiuming1/personal-blog');
+    script.setAttribute('data-repo-id', 'R_kgDOPhFB2A');
+    script.setAttribute('data-category', 'Announcements');
+    script.setAttribute('data-category-id', 'DIC_kwDOPhFB2M4CvCXZ');
+    script.setAttribute('data-mapping', 'pathname');
+    script.setAttribute('data-strict', '0');
+    script.setAttribute('data-reactions-enabled', '1');
+    script.setAttribute('data-emit-metadata', '0');
+    script.setAttribute('data-input-position', 'bottom');
+    script.setAttribute('data-theme', 'preferred_color_scheme');
+    script.setAttribute('data-lang', 'zh-CN');
+    script.setAttribute('data-loading', 'lazy');
     script.setAttribute('crossorigin', 'anonymous');
     script.async = true;
 
     // 添加错误处理
     script.onerror = (error) => {
       console.error('Giscus脚本加载失败:', error);
+    };
+
+    // 添加加载成功处理
+    script.onload = () => {
+      console.log('Giscus脚本加载成功');
     };
 
     // 添加到容器中
@@ -149,6 +150,41 @@ const GiscusComments = ({ articleId, articleTitle }) => {
               border: 'none',
               borderRadius: 1,
             },
+          }}
+        />
+        
+        {/* 备用HTML方式 - 如果JavaScript方式有问题 */}
+        <Box
+          sx={{
+            display: 'none', // 默认隐藏，只在JavaScript方式失败时显示
+            '& .giscus': {
+              maxWidth: '100%',
+            },
+            '& .giscus-frame': {
+              width: '100%',
+              border: 'none',
+              borderRadius: 1,
+            },
+          }}
+          dangerouslySetInnerHTML={{
+            __html: `
+              <script src="https://giscus.app/client.js"
+                      data-repo="jiuming1/personal-blog"
+                      data-repo-id="R_kgDOPhFB2A"
+                      data-category="Announcements"
+                      data-category-id="DIC_kwDOPhFB2M4CvCXZ"
+                      data-mapping="pathname"
+                      data-strict="0"
+                      data-reactions-enabled="1"
+                      data-emit-metadata="0"
+                      data-input-position="bottom"
+                      data-theme="preferred_color_scheme"
+                      data-lang="zh-CN"
+                      data-loading="lazy"
+                      crossorigin="anonymous"
+                      async>
+              </script>
+            `
           }}
         />
       </Paper>
